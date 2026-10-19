@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="350" viewBox="0 0 1200 350" role="img" aria-labelledby="title desc">
+  <title id="title">ESP32 N16R8 Windows 部署流程</title>
+  <desc id="desc">完整解压软件，USB OTG 连接电脑，写入并校验固件，复位后接回 iPhone。</desc>
+  <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0 8 4 0 8" fill="none" stroke="#94a3b8" stroke-width="1.6"/></marker></defs>
+  <rect width="1200" height="350" rx="24" fill="#f1f5f9"/>
+  <g font-family="Microsoft YaHei UI,Noto Sans CJK SC,Arial,sans-serif">
+    <text x="40" y="53" font-size="25" font-weight="700" fill="#152238">从 Windows 刷写，到 iPhone 使用</text>
+    <text x="40" y="81" font-size="16" fill="#65758b">ESP32-S3 N16R8 · 16 MB Flash / 8 MB OPI PSRAM</text>
+    <g fill="#fff" stroke="#dde5ef"><rect x="36" y="113" width="256" height="161" rx="16"/><rect x="326" y="113" width="256" height="161" rx="16"/><rect x="616" y="113" width="256" height="161" rx="16"/><rect x="906" y="113" width="256" height="161" rx="16"/></g>
+    <g fill="#2563eb"><circle cx="71" cy="148" r="17"/><circle cx="361" cy="148" r="17"/><circle cx="651" cy="148" r="17"/><circle cx="941" cy="148" r="17"/></g>
+    <g fill="#fff" font-size="18" font-weight="700" text-anchor="middle"><text x="71" y="154">1</text><text x="361" y="154">2</text><text x="651" y="154">3</text><text x="941" y="154">4</text></g>
+    <g fill="#152238" font-size="21" font-weight="700"><text x="58" y="197">完整解压便携包</text><text x="348" y="197">USB/OTG 接电脑</text><text x="638" y="197">一键部署并校验</text><text x="928" y="197">复位后接回手机</text></g>
+    <g fill="#65758b" font-size="15"><text x="58" y="229">运行 ESP32-OneClick.exe</text><text x="58" y="251">保留 _internal 和源码目录</text><text x="348" y="229">使用数据线，选择 COM 端口</text><text x="348" y="251">需要时按 BOOT + RESET</text><text x="638" y="229">等待 Hash of data verified.</text><text x="638" y="251">写入会替换旧程序和配置</text><text x="928" y="229">按 RESET/EN，接已解锁 iPhone</text><text x="928" y="251">在 ESP32 Agent 中继续设置</text></g>
+    <g stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"><path d="M298 194H314"/><path d="M588 194H604"/><path d="M878 194H894"/></g>
+    <text x="40" y="315" font-size="15" fill="#65758b">原项目：onehumanbeing/esp32-iphone-agent　｜　Windows 工具：WS08 fork　｜　手机 App 需单独安装</text>
+  </g>
+</svg>

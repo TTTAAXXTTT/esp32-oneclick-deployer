@@ -1,0 +1,10 @@
+{
+  "source_url": "https://github.com/TTTAAXXTTT/esp32-iphone-agent/releases/download/windows-deployer-v1.1.0/ESP32-OneClick-Source-v1.1.0.zip",
+  "source_sha256": "ca700f414df84ed8ffffdb1326a8af966a79fa63eba028af1e18c26ac6cbabb5",
+  "move": {
+    "GUIDE.zh-CN.md": "docs/GUIDE.zh-CN.md",
+    "windows-deployer-v1.1.0.jpg": "docs/windows-deployer-v1.1.0.jpg",
+    "windows-deployer-flow.svg": "docs/windows-deployer-flow.svg",
+    "package_release.py": "tools/package_release.py"
+  }
+}
