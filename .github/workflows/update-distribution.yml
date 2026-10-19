@@ -1,0 +1,103 @@
+name: Refresh maintainer references and release assets
+
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/update-distribution.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: maintain-release-distribution
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download the current distribution for verified repackaging
+        run: |
+          mkdir -p "$RUNNER_TEMP/distribution-inputs"
+          gh release download v1.1.0 --pattern 'ESP32-OneClick-*.zip' --pattern 'SHA256SUMS.txt' --dir "$RUNNER_TEMP/distribution-inputs"
+      - name: Normalize maintainer names and refresh verified build inputs
+        shell: python
+        run: |
+          import copy, hashlib, json, os, re, zipfile
+          from pathlib import Path
+          root = Path.cwd()
+          owner = os.environ['GITHUB_REPOSITORY_OWNER']
+          for name in ('README.md', 'SOURCE-BUILD.md', 'docs/GUIDE.zh-CN.md'):
+              path = root / name
+              text = path.read_text('utf-8')
+              text = re.sub(r'（原 [A-Za-z0-9_-]+）', '', text)
+              text = re.sub(r'本项目是 [A-Za-z0-9_-]+ 独立维护', '本项目是 ' + owner + ' 独立维护', text)
+              path.write_text(text, 'utf-8', newline='\n')
+          path = root / 'docs/windows-deployer-flow.svg'
+          text = re.sub(r'Windows 工具：[A-Za-z0-9_-]+ fork', 'Windows 工具：' + owner, path.read_text('utf-8'))
+          path.write_text(text, 'utf-8', newline='\n')
+          path = root / 'RELEASE-v1.1.0.md'
+          text = re.sub(r'/docs/windows-deployer-flow.svg(?:\?[^)]*)?\)', '/docs/windows-deployer-flow.svg?revision=maintainer-refresh)', path.read_text('utf-8'))
+          path.write_text(text, 'utf-8', newline='\n')
+          inputs = Path(os.environ['RUNNER_TEMP']) / 'distribution-inputs'
+          expected_names = {'ESP32-OneClick-N16R8-Windows-x64-v1.1.0.zip', 'ESP32-OneClick-Source-v1.1.0.zip'}
+          checked = set()
+          for line in (inputs / 'SHA256SUMS.txt').read_text('utf-8-sig').splitlines():
+              sha, name = line.split(None, 1)
+              name = name.strip()
+              assert name in expected_names and name not in checked
+              assert hashlib.sha256((inputs / name).read_bytes()).hexdigest() == sha
+              checked.add(name)
+          assert checked == expected_names
+          with zipfile.ZipFile(inputs / 'ESP32-OneClick-Source-v1.1.0.zip') as source:
+              manifests = [
+                  ('firmware/agent-n16r8.bin', json.loads((root / 'firmware/manifest.json').read_text('utf-8-sig'))),
+                  ('tools/arduino-cli.exe', json.loads((root / 'tools/manifest.json').read_text('utf-8-sig'))['arduino_cli']),
+              ]
+              for name, manifest in manifests:
+                  data = source.read('ESP32-OneClick-Source-v1.1.0/' + name)
+                  assert len(data) == manifest['size'] and hashlib.sha256(data).hexdigest() == manifest['sha256']
+                  (root / name).write_bytes(data)
+          portable_name = 'ESP32-OneClick-N16R8-Windows-x64-v1.1.0.zip'
+          output = Path(os.environ['RUNNER_TEMP']) / 'clean-portable.zip'
+          edited = []
+          with zipfile.ZipFile(inputs / portable_name) as original, zipfile.ZipFile(output, 'w') as clean:
+              for entry in original.infolist():
+                  data = original.read(entry)
+                  if entry.filename in ('ESP32-OneClick/source/firmware/BUILD.md', 'ESP32-OneClick/_internal/firmware/manifest.json'):
+                      text = data.decode('utf-8-sig')
+                      text = re.sub(r'https://github\.com/[A-Za-z0-9_-]+/esp32-iphone-agent/tree/', 'https://github.com/onehumanbeing/esp32-iphone-agent/tree/', text)
+                      replacement = text.encode('utf-8')
+                      if replacement != data:
+                          edited.append(entry.filename)
+                      data = replacement
+                  clean.writestr(copy.copy(entry), data, compress_type=entry.compress_type, compresslevel=9)
+          with zipfile.ZipFile(output) as clean:
+              assert clean.testzip() is None
+          print('Updated portable metadata entries:', edited)
+      - name: Commit the cleaned project and update the source tag
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add README.md SOURCE-BUILD.md docs/GUIDE.zh-CN.md docs/windows-deployer-flow.svg RELEASE-v1.1.0.md
+          if ! git diff --cached --quiet; then
+            git commit -m 'Refresh maintainer references and distribution provenance'
+            git push origin HEAD:main
+          fi
+          git tag -f v1.1.0 HEAD
+          git push origin refs/tags/v1.1.0 --force
+      - name: Generate complete source and distribution checksums
+        run: python tools/package_release.py --input-portable "$RUNNER_TEMP/clean-portable.zip" --output-dir "$RUNNER_TEMP/clean-release"
+      - name: Update the release assets and illustrated notes
+        run: |
+          gh release upload v1.1.0 "$RUNNER_TEMP/clean-release/ESP32-OneClick-N16R8-Windows-x64-v1.1.0.zip" "$RUNNER_TEMP/clean-release/ESP32-OneClick-Source-v1.1.0.zip" "$RUNNER_TEMP/clean-release/SHA256SUMS.txt" --clobber
+          gh release edit v1.1.0 --notes-file RELEASE-v1.1.0.md
