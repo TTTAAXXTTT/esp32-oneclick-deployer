@@ -14,7 +14,7 @@
 
 ## 怎么使用
 
-![从电脑刷写到接回 iPhone 的部署流程](https://raw.githubusercontent.com/TTTAAXXTTT/esp32-oneclick-deployer/v1.1.0/docs/windows-deployer-flow.svg)
+![从电脑刷写到接回 iPhone 的部署流程](https://raw.githubusercontent.com/TTTAAXXTTT/esp32-oneclick-deployer/v1.1.0/docs/windows-deployer-flow.svg?revision=maintainer-refresh)
 
 1. 用数据线将开发板 **USB/OTG** 口接电脑，刷新并选择 COM 端口。
 2. 确认可以覆盖板上的旧程序和配置，点击「一键部署」。

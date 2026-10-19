@@ -2,7 +2,7 @@
 
 **Windows 一键部署 ESP32-S3 N16R8**：图形刷写、固件完整性校验、官方固件自动检查和下载构建。
 
-这是 TTTAAXXTTT（原 WS08）维护的独立项目，源码、测试和构建脚本直接放在本仓库。适用 Windows 10/11 x64；目标开发板为 **16 MB Flash / 8 MB OPI PSRAM**。
+这是 TTTAAXXTTT维护的独立项目，源码、测试和构建脚本直接放在本仓库。适用 Windows 10/11 x64；目标开发板为 **16 MB Flash / 8 MB OPI PSRAM**。
 
 [下载 v1.1.0 软件与完整源码](https://github.com/TTTAAXXTTT/esp32-oneclick-deployer/releases/tag/v1.1.0) · [中文图文指南](docs/GUIDE.zh-CN.md) · [从源码构建](SOURCE-BUILD.md)
 
@@ -60,6 +60,6 @@ v1.1.0 已通过 68 项自动化测试、冻结 EXE 自检及界面检查；内�
 
 ## 原作者与许可证
 
-ESP32 iPhone Agent 原始项目由 **Henry（[onehumanbeing](https://github.com/onehumanbeing) / [@iamhenryyuan](https://x.com/iamhenryyuan)）** 开发，来源：[onehumanbeing/esp32-iphone-agent](https://github.com/onehumanbeing/esp32-iphone-agent)。感谢原作者提供固件及手机端项目。本独立仓库由 TTTAAXXTTT（原 WS08）维护 Windows 部署工具，不代表原作者官方发布或背书。
+ESP32 iPhone Agent 原始项目由 **Henry（[onehumanbeing](https://github.com/onehumanbeing) / [@iamhenryyuan](https://x.com/iamhenryyuan)）** 开发，来源：[onehumanbeing/esp32-iphone-agent](https://github.com/onehumanbeing/esp32-iphone-agent)。感谢原作者提供固件及手机端项目。本独立仓库由 TTTAAXXTTT维护 Windows 部署工具，不代表原作者官方发布或背书。
 
 本工具为 GPL-3.0；保留原项目 MIT 声明，AirPlay 部分及相应完整固件按 GPL-3.0 分发。esptool 为 GPL-2.0-or-later，Arduino CLI 为 GPL-3.0。完整许可与第三方声明见 `LICENSE`、`licenses/` 和对应源码目录。

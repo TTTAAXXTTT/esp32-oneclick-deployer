@@ -1,8 +1,8 @@
 # ESP32 OneClick v1.1.0 完整源码包
 
-本项目是 WS08 独立维护的 Windows 一键部署工具 v1.1.0 的完整构建工作目录。GUI、刷写后端、更新模块、测试、打包脚本与已发布便携版中的源码一致。
+本项目是 TTTAAXXTTT 独立维护的 Windows 一键部署工具 v1.1.0 的完整构建工作目录。GUI、刷写后端、更新模块、测试、打包脚本与已发布便携版中的源码一致。
 
-原作者与上游项目：[onehumanbeing/esp32-iphone-agent](https://github.com/onehumanbeing/esp32-iphone-agent)。本工具是由 TTTAAXXTTT（原 WS08）维护的 Windows 部署辅助工具，保留上游的原始著作权与许可证声明；上游作者并未为本工具背书。
+原作者与上游项目：[onehumanbeing/esp32-iphone-agent](https://github.com/onehumanbeing/esp32-iphone-agent)。本工具是由 TTTAAXXTTT维护的 Windows 部署辅助工具，保留上游的原始著作权与许可证声明；上游作者并未为本工具背书。
 
 ## 从源码构建 Windows 软件
 

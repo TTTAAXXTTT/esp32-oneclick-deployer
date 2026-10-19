@@ -2,7 +2,7 @@
 
 在 Windows 上，为 **ESP32-S3 N16R8（16 MB Flash / 8 MB OPI PSRAM）** 刷入 ESP32 Agent 固件。完整解压便携包后即可运行，使用内置固件时无需安装 Python、Arduino IDE 或 Git。
 
-本工具是独立项目 [TTTAAXXTTT/esp32-oneclick-deployer](https://github.com/TTTAAXXTTT/esp32-oneclick-deployer)，提供 Windows 图形部署工具。原始 ESP32 iPhone Agent 项目由 **Henry（[@iamhenryyuan](https://x.com/iamhenryyuan) / [onehumanbeing](https://github.com/onehumanbeing)）** 开发；请先了解[原作者项目](https://github.com/onehumanbeing/esp32-iphone-agent)。Windows 图形工具、打包和更新功能由 TTTAAXXTTT（原 WS08）维护，本发布不代表原作者官方发布或背书。
+本工具是独立项目 [TTTAAXXTTT/esp32-oneclick-deployer](https://github.com/TTTAAXXTTT/esp32-oneclick-deployer)，提供 Windows 图形部署工具。原始 ESP32 iPhone Agent 项目由 **Henry（[@iamhenryyuan](https://x.com/iamhenryyuan) / [onehumanbeing](https://github.com/onehumanbeing)）** 开发；请先了解[原作者项目](https://github.com/onehumanbeing/esp32-iphone-agent)。Windows 图形工具、打包和更新功能由 TTTAAXXTTT维护，本发布不代表原作者官方发布或背书。
 
 ## 下载
 
