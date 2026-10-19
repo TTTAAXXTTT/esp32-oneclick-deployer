@@ -1,0 +1,94 @@
+name: Initialize independent project and publish v1.1.0
+
+on:
+  push:
+    branches: [main]
+    paths: [INITIALIZE.json, .github/workflows/initialize-project.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: initialize-independent-project
+  cancel-in-progress: false
+
+jobs:
+  initialize:
+    runs-on: windows-latest
+    steps:
+      - name: Preserve source bytes
+        shell: pwsh
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Expand the reviewed project source once
+        id: source
+        shell: python
+        run: |
+          import hashlib, json, os, shutil, tempfile, urllib.request
+          from pathlib import Path
+          import zipfile
+          marker = Path('INITIALIZE.json')
+          ready = marker.is_file()
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
+              print('ready=' + str(ready).lower(), file=out)
+          if ready:
+              plan = json.loads(marker.read_text('utf-8'))
+              root = Path.cwd().resolve()
+              with tempfile.TemporaryDirectory() as temporary:
+                  archive = Path(temporary) / 'source.zip'
+                  with urllib.request.urlopen(plan['source_url'], timeout=120) as response, archive.open('wb') as out:
+                      shutil.copyfileobj(response, out)
+                  assert hashlib.sha256(archive.read_bytes()).hexdigest() == plan['source_sha256']
+                  with zipfile.ZipFile(archive) as source:
+                      for entry in source.infolist():
+                          if entry.is_dir():
+                              continue
+                          prefix = 'ESP32-OneClick-Source-v1.1.0/'
+                          assert entry.filename.startswith(prefix)
+                          name = entry.filename[len(prefix):]
+                          path = (root / name).resolve()
+                          assert path.is_relative_to(root)
+                          assert name.split('/')[0] not in ('.git', '.github')
+                          if name in ('firmware/agent-n16r8.bin', 'tools/arduino-cli.exe', 'SOURCE-INVENTORY.json', 'SHA256SUMS.source.txt'):
+                              continue
+                          if not path.exists():
+                              path.parent.mkdir(parents=True, exist_ok=True)
+                              path.write_bytes(source.read(entry))
+              for old, new in plan['move'].items():
+                  target = root / new
+                  target.parent.mkdir(parents=True, exist_ok=True)
+                  (root / old).replace(target)
+      - name: Install pinned Python dependencies
+        if: steps.source.outputs.ready == 'true'
+        run: python -m pip install -r requirements.txt
+      - name: Run project tests without hardware
+        if: steps.source.outputs.ready == 'true'
+        run: python -m unittest discover -s tests -v
+      - name: Commit the expanded source to main
+        if: steps.source.outputs.ready == 'true'
+        shell: pwsh
+        run: |
+          Remove-Item -LiteralPath INITIALIZE.json
+          git config user.name 'TTTAAXXTTT'
+          git config user.email '62324848+TTTAAXXTTT@users.noreply.github.com'
+          git add --all
+          git commit -m 'Publish complete independent project source, tests and illustrated docs'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git push origin HEAD:main
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Package source and verify the existing portable application
+        if: steps.source.outputs.ready == 'true'
+        run: python tools/package_release.py
+      - name: Publish the independent project release
+        if: steps.source.outputs.ready == 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $commit = git rev-parse HEAD
+          gh release create v1.1.0 ../publish-assets/ESP32-OneClick-N16R8-Windows-x64-v1.1.0.zip ../publish-assets/ESP32-OneClick-Source-v1.1.0.zip ../publish-assets/SHA256SUMS.txt --target $commit --title 'ESP32 OneClick Deployer v1.1.0 · Windows x64 / N16R8' --notes-file RELEASE-v1.1.0.md
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
