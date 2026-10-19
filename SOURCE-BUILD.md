@@ -31,7 +31,7 @@ python -m venv .venv
 ## 固件来源与精确目标
 
 - 上游：<https://github.com/onehumanbeing/esp32-iphone-agent>
-- 随包固件对应源码：<https://github.com/TTTAAXXTTT/esp32-iphone-agent/tree/bae786f7b3d04d9a2feb4fe2ef398b3f169bdd02>
+- 随包固件对应源码：<https://github.com/onehumanbeing/esp32-iphone-agent/tree/bae786f7b3d04d9a2feb4fe2ef398b3f169bdd02>
 - 源提交：`bae786f7b3d04d9a2feb4fe2ef398b3f169bdd02`
 - 目标：ESP32-S3 N16R8，16 MB Flash / 8 MB OPI PSRAM。
 - FQBN：`esp32:esp32:esp32s3:USBMode=default,CDCOnBoot=cdc,FlashSize=16M,PSRAM=opi,PartitionScheme=default_8MB`

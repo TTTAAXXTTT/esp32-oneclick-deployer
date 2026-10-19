@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "arduino_cli": {
+    "version": "1.5.1",
+    "commit": "01f3d4f2b",
+    "filename": "arduino-cli.exe",
+    "platform": "windows-amd64",
+    "sha256": "1017de89179c3167e6b8a38ca6cc4091fa69a3cf97aafa7810f01423003f5571",
+    "size": 37731328,
+    "download_url": "https://downloads.arduino.cc/arduino-cli/arduino-cli_1.5.1_Windows_64bit.zip",
+    "archive_sha256": "fabe42e0eb04d00e776a66178299ff95a46c623dbc260f997e58fd514853dd40",
+    "checksums_url": "https://downloads.arduino.cc/arduino-cli/1.5.1-checksums.txt",
+    "checksums_sha256": "1deac1e8d8eff69ef1b0cb8c5d4be2a3a81224b103eaf3403b77ff470c7f4ec6",
+    "source_url": "https://codeload.github.com/arduino/arduino-cli/tar.gz/refs/tags/v1.5.1",
+    "source_filename": "arduino-cli-1.5.1.tar.gz",
+    "source_sha256": "262fbe874f62677d01eb15593144ca82bd6e7c2d0c00f82aa93949ab12924de6",
+    "license": "GPL-3.0-only",
+    "modified": false
+  }
+}

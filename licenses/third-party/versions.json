@@ -1,0 +1,90 @@
+[
+  {
+    "name": "esptool",
+    "version": "5.1.0"
+  },
+  {
+    "name": "pyserial",
+    "version": "3.5"
+  },
+  {
+    "name": "pyinstaller",
+    "version": "6.22.3"
+  },
+  {
+    "name": "cryptography",
+    "version": "50.0.2"
+  },
+  {
+    "name": "cffi",
+    "version": "2.1.1"
+  },
+  {
+    "name": "bitstring",
+    "version": "5.0.0"
+  },
+  {
+    "name": "tibs",
+    "version": "2.0.2"
+  },
+  {
+    "name": "reedsolo",
+    "version": "1.7.0"
+  },
+  {
+    "name": "intelhex",
+    "version": "2.3.0"
+  },
+  {
+    "name": "rich-click",
+    "version": "1.9.9"
+  },
+  {
+    "name": "click",
+    "version": "8.5.0"
+  },
+  {
+    "name": "rich",
+    "version": "15.0.0"
+  },
+  {
+    "name": "markdown-it-py",
+    "version": "4.2.0"
+  },
+  {
+    "name": "Pygments",
+    "version": "2.21.0"
+  },
+  {
+    "name": "mdurl",
+    "version": "0.1.2"
+  },
+  {
+    "name": "colorama",
+    "version": "0.4.6"
+  },
+  {
+    "name": "packaging",
+    "version": "26.3"
+  },
+  {
+    "name": "setuptools",
+    "version": "84.0.0"
+  },
+  {
+    "name": "pywin32-ctypes",
+    "version": "0.2.3"
+  },
+  {
+    "name": "pefile",
+    "version": "2024.8.26"
+  },
+  {
+    "name": "altgraph",
+    "version": "0.17.5"
+  },
+  {
+    "name": "pyinstaller-hooks-contrib",
+    "version": "2026.8"
+  }
+]

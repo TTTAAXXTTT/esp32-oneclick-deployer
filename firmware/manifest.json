@@ -1,0 +1,15 @@
+{
+  "name": "ESP32 iPhone Agent",
+  "target": "ESP32-S3 N16R8",
+  "firmware_file": "agent-n16r8.bin",
+  "sha256": "ca5605b4a96997121be8b993f2088aa5d43af3356f72ef25fe384ab1fae0c001",
+  "size": 16777216,
+  "flash_size_mb": 16,
+  "psram_mb": 8,
+  "chip_id": 9,
+  "source_commit": "bae786f7b3d04d9a2feb4fe2ef398b3f169bdd02",
+  "hardware_sha256": "5a8879f442edbe6097531d6db2e7efbf5c4f8c099f2eed2947a6a339e9c84e77",
+  "source_url": "https://github.com/onehumanbeing/esp32-iphone-agent/tree/bae786f7b3d04d9a2feb4fe2ef398b3f169bdd02",
+  "build_fqbn": "esp32:esp32:esp32s3:USBMode=default,CDCOnBoot=cdc,FlashSize=16M,PSRAM=opi,PartitionScheme=default_8MB",
+  "firmware_license": "GPL-3.0-only"
+}

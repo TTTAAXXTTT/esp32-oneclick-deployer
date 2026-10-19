@@ -1,0 +1,15 @@
+ESP32 OneClick
+Copyright (C) 2026. Distributed under GNU GPL version 3; see GPL-3.0.txt.
+
+The bundled ESP32 Agent firmware incorporates upstream MIT code and the GPL-3.0
+AirPlay receiver. Original notices are included in the corresponding source.
+Source for the application and firmware is included beside the executable.
+
+esptool 5.1.0: GPL-2.0-or-later
+https://github.com/espressif/esptool/tree/v5.1.0
+The original source distribution is included in source/third-party/.
+
+The portable bundle includes unmodified Python and third-party runtimes. Their
+installed license notices are collected in this directory and package metadata.
+PyInstaller's bootloader exception permits packaging applications; see its
+original license notice. No warranty is provided by the GPL licensors.
