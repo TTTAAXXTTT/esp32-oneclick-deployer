@@ -12,7 +12,7 @@
 
 **作者QQ：230154231**
 
-Windows 一键部署工具由 TTTAAXXTTT 维护。v1.1.1 启动时会显示作者信息弹窗，主界面底部常驻显示 QQ；点击「关于作者」可再次查看。此联系方式属于本 Windows 工具维护者，原始固件与手机项目作者见下方致谢。
+Windows 一键部署工具由 TTTAAXXTTT 维护。主界面底部常驻显示 QQ；点击「关于作者」可再次查看。此联系方式属于本 Windows 工具维护者，原始固件与手机项目作者见下方致谢。
 
 ## 使用方法
 
@@ -69,3 +69,4 @@ v1.1.1 已通过 68 项自动化测试、冻结 EXE 自检及界面检查；内�
 ESP32 iPhone Agent 原始项目由 **Henry（[onehumanbeing](https://github.com/onehumanbeing) / [@iamhenryyuan](https://x.com/iamhenryyuan)）** 开发，来源：[onehumanbeing/esp32-iphone-agent](https://github.com/onehumanbeing/esp32-iphone-agent)。感谢原作者提供固件及手机端项目。本独立仓库由 TTTAAXXTTT 维护 Windows 部署工具，不代表原作者官方发布或背书。
 
 本工具为 GPL-3.0；保留原项目 MIT 声明，AirPlay 部分及相应完整固件按 GPL-3.0 分发。esptool 为 GPL-2.0-or-later，Arduino CLI 为 GPL-3.0。完整许可与第三方声明见 `LICENSE`、`licenses/` 和对应源码目录。
+
