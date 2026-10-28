@@ -1,24 +1,30 @@
-# Windows 一键部署工具 v1.1.0
+# Windows 一键部署工具 v1.1.1
 
 在 Windows 上，为 **ESP32-S3 N16R8（16 MB Flash / 8 MB OPI PSRAM）** 刷入 ESP32 Agent 固件。完整解压便携包后即可运行，使用内置固件时无需安装 Python、Arduino IDE 或 Git。
 
-本工具是独立项目 [TTTAAXXTTT/esp32-oneclick-deployer](https://github.com/TTTAAXXTTT/esp32-oneclick-deployer)，提供 Windows 图形部署工具。原始 ESP32 iPhone Agent 项目由 **Henry（[@iamhenryyuan](https://x.com/iamhenryyuan) / [onehumanbeing](https://github.com/onehumanbeing)）** 开发；请先了解[原作者项目](https://github.com/onehumanbeing/esp32-iphone-agent)。Windows 图形工具、打包和更新功能由 TTTAAXXTTT维护，本发布不代表原作者官方发布或背书。
+本工具是独立项目 [TTTAAXXTTT/esp32-oneclick-deployer](https://github.com/TTTAAXXTTT/esp32-oneclick-deployer)，提供 Windows 图形部署工具。原始 ESP32 iPhone Agent 项目由 **Henry（[@iamhenryyuan](https://x.com/iamhenryyuan) / [onehumanbeing](https://github.com/onehumanbeing)）** 开发；请先了解[原作者项目](https://github.com/onehumanbeing/esp32-iphone-agent)。Windows 图形工具、打包和更新功能由 TTTAAXXTTT 维护，本发布不代表原作者官方发布或背书。
+
+## 作者与联系
+
+**作者QQ：230154231**
+
+软件启动时显示作者信息弹窗；主界面底部也显示 QQ，点击「关于作者」可重新打开弹窗。此 QQ 为 Windows 部署工具维护者的联系方式。原始固件与手机项目仍由 Henry / onehumanbeing 开发。
 
 ## 下载
 
-前往 [v1.1.0 发布页](https://github.com/TTTAAXXTTT/esp32-oneclick-deployer/releases/tag/v1.1.0)：
+前往 [v1.1.1 发布页](https://github.com/TTTAAXXTTT/esp32-oneclick-deployer/releases/tag/v1.1.1)：
 
 | 文件 | 用途 |
 | --- | --- |
-| `ESP32-OneClick-N16R8-Windows-x64-v1.1.0.zip` | Windows 10/11 x64 便携软件，包含运行环境、内置固件和对应源码 |
-| `ESP32-OneClick-Source-v1.1.0.zip` | 完整源码归档，用于阅读、修改及重新构建 |
+| `ESP32-OneClick-N16R8-Windows-x64-v1.1.1.zip` | Windows 10/11 x64 便携软件，包含运行环境、内置固件和对应源码 |
+| `ESP32-OneClick-Source-v1.1.1.zip` | 完整源码归档，用于阅读、修改及重新构建 |
 | `SHA256SUMS.txt` | 发布附件的 SHA-256 校验值 |
 
 仓库根目录直接提供工具源码、测试与构建脚本。克隆或下载本仓库后，先运行 `python prepare-build-inputs.py` 下载并校验两个构建输入，再按 [构建说明](../SOURCE-BUILD.md) 打包。Release 的完整源码附件已包含这两个输入。
 
 ## 软件界面
 
-![Windows 一键部署工具 v1.1.0：串口选择、固件检查、更新和部署进度](windows-deployer-v1.1.0.jpg)
+![Windows 一键部署工具 v1.1.1：串口选择、固件检查、更新和部署进度](windows-deployer-v1.1.1.png)
 
 上方选择串口和连接方式；中间查看内置固件、检查更新或准备新版固件；下方显示部署阶段和日志。只有点击「一键部署」后才会写入开发板。
 
@@ -37,7 +43,7 @@
 
 若无法自动进入下载模式：按住 **BOOT** → 按一下 **RESET/EN** → 松开 **BOOT**，等待串口出现后刷新选择，并切换到手动下载模式。找不到串口时先更换数据线、USB 接口，再检查设备管理器。
 
-## v1.1.0 的固件更新
+## v1.1.1 的固件更新
 
 默认在启动时检查原作者仓库的 `main` 分支，保持打开时每 6 小时再检查一次；也可点击「检查更新」或取消自动检查。
 
@@ -73,7 +79,7 @@ esp32:esp32:esp32s3:USBMode=default,CDCOnBoot=cdc,FlashSize=16M,PSRAM=opi,Partit
 | --- | --- |
 | ESP32 iPhone Agent 原项目 | [onehumanbeing/esp32-iphone-agent](https://github.com/onehumanbeing/esp32-iphone-agent)，原有 [MIT 声明](https://github.com/onehumanbeing/esp32-iphone-agent/blob/main/LICENSE) 保留 |
 | AirPlay 部分及链接后的完整固件 | GPL-3.0；完整固件与对应源码一同分发 |
-| 本 Windows 部署工具 | [GPL-3.0（源码包内 LICENSE）](ESP32-OneClick-Repository-Source-v1.1.0.zip) |
+| 本 Windows 部署工具 | [GPL-3.0（源码包内 LICENSE）](ESP32-OneClick-Repository-Source-v1.1.1.zip) |
 | esptool 5.1.0 | [espressif/esptool](https://github.com/espressif/esptool/tree/v5.1.0)，GPL-2.0-or-later |
 | Arduino CLI 1.5.1 | [arduino/arduino-cli](https://github.com/arduino/arduino-cli/tree/v1.5.1)，GPL-3.0 |
 

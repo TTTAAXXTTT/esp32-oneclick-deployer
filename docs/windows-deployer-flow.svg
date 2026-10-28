@@ -12,6 +12,6 @@
     <g fill="#152238" font-size="21" font-weight="700"><text x="58" y="197">完整解压便携包</text><text x="348" y="197">USB/OTG 接电脑</text><text x="638" y="197">一键部署并校验</text><text x="928" y="197">复位后接回手机</text></g>
     <g fill="#65758b" font-size="15"><text x="58" y="229">运行 ESP32-OneClick.exe</text><text x="58" y="251">保留 _internal 和源码目录</text><text x="348" y="229">使用数据线，选择 COM 端口</text><text x="348" y="251">需要时按 BOOT + RESET</text><text x="638" y="229">等待 Hash of data verified.</text><text x="638" y="251">写入会替换旧程序和配置</text><text x="928" y="229">按 RESET/EN，接已解锁 iPhone</text><text x="928" y="251">在 ESP32 Agent 中继续设置</text></g>
     <g stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"><path d="M298 194H314"/><path d="M588 194H604"/><path d="M878 194H894"/></g>
-    <text x="40" y="315" font-size="15" fill="#65758b">原项目：onehumanbeing/esp32-iphone-agent　｜　Windows 工具：TTTAAXXTTT　｜　手机 App 需单独安装</text>
+    <text x="40" y="315" font-size="15" fill="#65758b">原项目：onehumanbeing/esp32-iphone-agent　｜　Windows 工具：TTTAAXXTTT（作者QQ：230154231）　｜　手机 App 需单独安装</text>
   </g>
 </svg>

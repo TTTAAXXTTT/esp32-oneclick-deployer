@@ -1,5 +1,7 @@
 # ESP32 一键部署 v1.1.0 · Windows x64 / N16R8
 
+作者QQ：230154231（Windows 工具维护者）。[新版 v1.1.1](https://github.com/TTTAAXXTTT/esp32-oneclick-deployer/releases/tag/v1.1.1) 已增加启动作者窗口和界面联系信息。
+
 为 **ESP32-S3 N16R8（16 MB Flash / 8 MB OPI PSRAM）** 提供 Windows 图形部署工具：完整解压即可运行，内置固件可离线刷写。v1.1.0 新增官方固件检查和下载构建功能，并保留 v1.0.1 的下拉菜单崩溃修复。
 
 ![ESP32 一键部署 v1.1.0 软件界面](https://raw.githubusercontent.com/TTTAAXXTTT/esp32-oneclick-deployer/v1.1.0/docs/windows-deployer-v1.1.0.jpg)

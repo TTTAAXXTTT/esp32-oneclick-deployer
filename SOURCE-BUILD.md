@@ -1,6 +1,6 @@
-# ESP32 OneClick v1.1.0 完整源码包
+# ESP32 OneClick v1.1.1 完整源码包
 
-本项目是 TTTAAXXTTT 独立维护的 Windows 一键部署工具 v1.1.0 的完整构建工作目录。GUI、刷写后端、更新模块、测试、打包脚本与已发布便携版中的源码一致。
+本项目是 TTTAAXXTTT 独立维护的 Windows 一键部署工具 v1.1.1 的完整构建工作目录。GUI、刷写后端、更新模块、测试、打包脚本与已发布便携版中的源码一致。
 
 原作者与上游项目：[onehumanbeing/esp32-iphone-agent](https://github.com/onehumanbeing/esp32-iphone-agent)。本工具是由 TTTAAXXTTT维护的 Windows 部署辅助工具，保留上游的原始著作权与许可证声明；上游作者并未为本工具背书。
 
@@ -38,7 +38,7 @@ python -m venv .venv
 - 镜像 SHA-256：`ca5605b4a96997121be8b993f2088aa5d43af3356f72ef25fe384ab1fae0c001`
 - 镜像长度：16,777,216 字节，合并镜像从地址 `0x0` 写入。
 
-完整首选固件源码、原始声明和精确编译参数位于 `source/firmware/`。默认固件原构建记录为 Arduino CLI 1.3.1、Arduino ESP32 core 3.3.12、NimBLE-Arduino 2.5.1。v1.1.0 的在线更新构建模块使用随包 Arduino CLI 1.5.1，并固定相同版本 core 与 NimBLE；两者不要混淆。官方未来源码变化可能要求新版部署工具。
+完整首选固件源码、原始声明和精确编译参数位于 `source/firmware/`。默认固件原构建记录为 Arduino CLI 1.3.1、Arduino ESP32 core 3.3.12、NimBLE-Arduino 2.5.1。v1.1.1 的在线更新构建模块使用随包 Arduino CLI 1.5.1，并固定相同版本 core 与 NimBLE；两者不要混淆。官方未来源码变化可能要求新版部署工具。
 
 `source/firmware/BUILD.md` 保留原便携包的路径描述；在本项目中，许可证实际位于根目录 `licenses/`，固件 manifest 位于根目录 `firmware/manifest.json`。原 `source/README.md` 是便携包内的重建说明；本源码包直接按照本文构建即可，不需要复制目录。
 
@@ -52,3 +52,7 @@ python -m venv .venv
 - `SOURCE-INVENTORY.json` 和 `SHA256SUMS.source.txt` 记录交付文件的 SHA-256；清单本身不递归包含自己的哈希。
 
 本包不包含用户 API Key、Apple ID、Wi-Fi 配置、设备备份或运行日志。`secrets.example.h` 仅是上游的占位模板。
+
+## 作者联系
+
+作者QQ：230154231。此联系方式属于 Windows 部署工具维护者；请保留原始项目与第三方许可证声明。

@@ -15,3 +15,7 @@
 SHA256、长度与来源信息，再重新打包。
 
 本版本只接受 ESP32-S3 N16R8（16 MB Flash、8 MB PSRAM）的完整 16 MB 镜像。
+
+Windows 一键部署工具维护：TTTAAXXTTT
+作者QQ：230154231
+原始固件与手机项目作者：Henry / onehumanbeing。此 QQ 为 Windows 工具维护者联系方式。

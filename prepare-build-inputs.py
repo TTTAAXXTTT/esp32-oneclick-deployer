@@ -7,7 +7,7 @@ import urllib.request
 import zipfile
 
 ROOT = Path(__file__).resolve().parent
-URL = 'https://github.com/TTTAAXXTTT/esp32-oneclick-deployer/releases/download/v1.1.0/ESP32-OneClick-Source-v1.1.0.zip'
+URL = 'https://github.com/TTTAAXXTTT/esp32-oneclick-deployer/releases/download/v1.1.1/ESP32-OneClick-Source-v1.1.1.zip'
 
 def main():
     firmware = json.loads((ROOT / 'firmware/manifest.json').read_text('utf-8-sig'))
@@ -32,7 +32,7 @@ def main():
         with zipfile.ZipFile(archive) as source:
             checked = []
             for name, meta in missing:
-                entry = source.getinfo('ESP32-OneClick-Source-v1.1.0/' + name)
+                entry = source.getinfo('ESP32-OneClick-Source-v1.1.1/' + name)
                 if entry.file_size > 64 * 1024 * 1024:
                     raise ValueError('Unexpected build input size')
                 data = source.read(entry)

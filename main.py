@@ -12,7 +12,9 @@ import sys
 import threading
 import traceback
 
-APP_VERSION = "1.1.0"
+APP_VERSION = "1.1.1"
+AUTHOR_QQ = "230154231"
+AUTHOR_CONTACT = f"作者QQ：{AUTHOR_QQ}"
 
 
 def resource_root() -> Path:
@@ -133,8 +135,8 @@ class Application:
         self.log_path = data / f"deploy-{dt.datetime.now():%Y%m%d-%H%M%S}.log"
 
         window.title(f"ESP32 一键部署 v{APP_VERSION}")
-        window.geometry("940x925")
-        window.minsize(880, 910)
+        window.geometry("940x965")
+        window.minsize(880, 950)
         window.configure(bg=self.BG)
         window.protocol("WM_DELETE_WINDOW", self.close)
         self._style()
@@ -150,6 +152,7 @@ class Application:
         self.window.after(80, self._drain)
         self.window.after(3000, self._auto_refresh)
         self.window.after(1800, self._auto_check_update)
+        self.window.after(450, self._show_author_info)
         threading.Thread(target=self._check_firmware, daemon=True).start()
 
     def _style(self):
@@ -298,8 +301,18 @@ class Application:
                   relief="flat", bd=0, cursor="hand2", font=("Microsoft YaHei UI", 9)).pack(side="right")
         # Reserve the footer before the expanding log pane so it remains visible
         # at the minimum window height, including the taller update controls.
-        self._label(main, "连接失败？按住 BOOT → 按一下 RESET/EN → 松开 BOOT，再刷新并选择“直接连接”。",
-                    size=9, color=self.MUTED).pack(side="bottom", anchor="w", pady=(9, 0))
+        footer = tk.Frame(main, bg=self.BG)
+        footer.pack(side="bottom", fill="x", pady=(9, 0))
+        self._label(footer, "连接失败？按住 BOOT → 按一下 RESET/EN → 松开 BOOT，再刷新并选择“直接连接”。",
+                    size=9, color=self.MUTED).pack(anchor="w")
+        author = tk.Frame(footer, bg=self.BG)
+        author.pack(fill="x", pady=(5, 0))
+        self.author_contact_label = self._label(author, AUTHOR_CONTACT, size=10,
+                                              color=self.ACCENT, bold=True)
+        self.author_contact_label.pack(side="left")
+        self.author_info_button = ttk.Button(author, text="关于作者", style="Quiet.TButton",
+                                             command=self._show_author_info)
+        self.author_info_button.pack(side="right")
         log_frame = tk.Frame(main, bg="#101C2D")
         log_frame.pack(fill="both", expand=True)
         self.log_text = tk.Text(log_frame, height=6, bg="#101C2D", fg="#D5E2F2", insertbackground="white",
@@ -310,6 +323,40 @@ class Application:
         scroll.pack(side="right", fill="y")
         self.log_text.pack(side="left", fill="both", expand=True)
         self._update_actions()
+
+    def _show_author_info(self):
+        if self.closing:
+            return
+        existing = getattr(self, "author_info_window", None)
+        if existing is not None and existing.winfo_exists():
+            existing.lift()
+            existing.focus_set()
+            return
+        dialog = self.tk.Toplevel(self.window)
+        self.author_info_window = dialog
+        dialog.title("ESP32 一键部署 · 作者信息")
+        dialog.configure(bg=self.WHITE)
+        dialog.resizable(False, False)
+        dialog.transient(self.window)
+        content = self.tk.Frame(dialog, bg=self.WHITE, padx=24, pady=20)
+        content.pack(fill="both", expand=True)
+        self._label(content, f"ESP32 一键部署 v{APP_VERSION}", size=15, bold=True).pack(anchor="w")
+        self._label(content, AUTHOR_CONTACT, size=19, color=self.ACCENT, bold=True).pack(anchor="w", pady=(14, 6))
+        self._label(content, "Windows 部署工具维护：TTTAAXXTTT", color=self.MUTED).pack(anchor="w")
+        self._label(content, "原始 ESP32 iPhone Agent：Henry / onehumanbeing\n"
+                    "https://github.com/onehumanbeing/esp32-iphone-agent",
+                    size=9, color=self.MUTED, justify="left").pack(anchor="w", pady=(14, 5))
+        self._label(content, "本工具负责开发板固件部署，手机 App 需单独安装。",
+                    size=9, color=self.MUTED).pack(anchor="w")
+        self.ttk.Button(content, text="知道了", style="Quiet.TButton", command=dialog.destroy).pack(anchor="e", pady=(16, 0))
+        dialog.update_idletasks()
+        width, height = dialog.winfo_reqwidth(), dialog.winfo_reqheight()
+        left = self.window.winfo_x() + (self.window.winfo_width() - width) // 2
+        top = self.window.winfo_y() + (self.window.winfo_height() - height) // 2
+        left = max(0, min(left, dialog.winfo_screenwidth() - width))
+        top = max(0, min(top, dialog.winfo_screenheight() - height))
+        dialog.geometry(f"{width}x{height}+{left}+{top}")
+        dialog.lift()
 
     def _check_firmware(self):
         try:

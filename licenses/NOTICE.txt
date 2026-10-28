@@ -13,3 +13,7 @@ The portable bundle includes unmodified Python and third-party runtimes. Their
 installed license notices are collected in this directory and package metadata.
 PyInstaller's bootloader exception permits packaging applications; see its
 original license notice. No warranty is provided by the GPL licensors.
+
+Windows 一键部署工具维护：TTTAAXXTTT
+作者QQ：230154231
+原始固件与手机项目作者：Henry / onehumanbeing。此 QQ 为 Windows 工具维护者联系方式。
