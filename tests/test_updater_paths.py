@@ -39,7 +39,7 @@ class CompilerPathTests(unittest.TestCase):
         app.events = queue.Queue()
         with mock.patch.dict(updater.os.environ, {"ESP32_ONECLICK_UPDATE_CACHE": ""}):
             manager = app._new_update_manager()
-        self.assertEqual(manager.cache_root, app.data_root / "updates")
+        self.assertEqual(manager.cache_root, (app.data_root / "updates").resolve())
 
     def test_explicit_update_cache_can_avoid_unsupported_profile_path(self):
         app = Application.__new__(Application)
@@ -48,7 +48,7 @@ class CompilerPathTests(unittest.TestCase):
         cache = Path(tempfile.gettempdir()) / "ESP32 update cache"
         with mock.patch.dict(updater.os.environ, {"ESP32_ONECLICK_UPDATE_CACHE": str(cache)}):
             manager = app._new_update_manager()
-        self.assertEqual(manager.cache_root, cache.absolute())
+        self.assertEqual(manager.cache_root, cache.resolve())
 
     def test_ascii_paths_with_spaces_are_preserved(self):
         path = Path("C:/Users/test/update cache")
