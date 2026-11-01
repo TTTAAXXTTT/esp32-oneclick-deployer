@@ -1,4 +1,5 @@
 # Windows x64 build/runtime dependencies. End users run the portable EXE.
 esptool==5.1.0
 pyserial==3.5
+certifi==2026.10.23
 PyInstaller==6.22.3

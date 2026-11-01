@@ -12,7 +12,7 @@ import sys
 import threading
 import traceback
 
-APP_VERSION = "1.1.1"
+APP_VERSION = "1.1.2"
 AUTHOR_QQ = "230154231"
 AUTHOR_CONTACT = f"作者QQ：{AUTHOR_QQ}"
 
@@ -76,8 +76,51 @@ def self_test(report_path: str) -> int:
             if result.returncode != 0 or "5.1.0" not in output:
                 raise RuntimeError("The bundled esptool worker did not pass its version check: " + output)
             report["worker_version"] = "5.1.0"
+        import certifi
+        import ssl
+        from https_transport import create_https_context
+        context = create_https_context()
+        if context.verify_mode != ssl.CERT_REQUIRED or not context.check_hostname:
+            raise RuntimeError("HTTPS certificate and hostname verification must remain enabled.")
+        if getattr(sys, "frozen", False) and not Path(certifi.where()).resolve().is_relative_to(resource_root().resolve()):
+            raise RuntimeError("The frozen application is not using its bundled CA file.")
+        report["https_verification"] = True
+        report["certifi_version"] = certifi.__version__
+        report["trusted_ca_count"] = context.cert_store_stats()["x509_ca"]
         report.update(ok=True, target=manifest["target"], firmware_sha256=spec.sha256,
                       firmware_bytes=spec.size, source_commit=manifest["source_commit"])
+    except Exception:
+        report["error"] = traceback.format_exc()
+    destination = Path(report_path).resolve()
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    return 0 if report["ok"] else 1
+
+
+def check_update(report_path: str, prepare_cache: str | None = None) -> int:
+    """Check HTTPS or prepare firmware in an explicit diagnostic cache; no serial."""
+    import tempfile
+    from updater import UpdateManager
+
+    report = {"ok": False, "serial_port_opened": False, "app_version": APP_VERSION}
+    try:
+        manifest, _ = load_firmware()
+        with tempfile.TemporaryDirectory(prefix="esp32-update-check-") as directory:
+            cache = Path(prepare_cache).expanduser().absolute() if prepare_cache is not None else Path(directory)
+            manager = UpdateManager(cache, resource_root() / "tools" / "arduino-cli.exe")
+            candidate = manager.check(manifest)
+            report.update(ok=True, source_commit=candidate.source_commit,
+                          hardware_sha256=candidate.hardware_sha256,
+                          update_available=candidate.available)
+            if prepare_cache is not None:
+                report["ok"] = False
+                prepared, spec = manager.prepare(candidate)
+                cached = manager.load_cached()
+                if cached is None or cached[1].sha256 != spec.sha256:
+                    raise RuntimeError("Prepared firmware did not pass the cached activation check.")
+                report.update(ok=True, firmware_prepared=True, cached_active_valid=True,
+                              firmware_sha256=spec.sha256, firmware_bytes=spec.size,
+                              source_commit=prepared["source_commit"])
     except Exception:
         report["error"] = traceback.format_exc()
     destination = Path(report_path).resolve()
@@ -372,8 +415,10 @@ class Application:
 
     def _new_update_manager(self):
         from updater import UpdateManager
+        cache_override = os.environ.get("ESP32_ONECLICK_UPDATE_CACHE", "").strip()
+        cache_root = Path(cache_override).expanduser().absolute() if cache_override else self.data_root / "updates"
         return UpdateManager(
-            self.data_root / "updates", resource_root() / "tools" / "arduino-cli.exe",
+            cache_root, resource_root() / "tools" / "arduino-cli.exe",
             log_callback=lambda line: self.events.put(("log", line)),
             progress_callback=lambda value: self.events.put(("update_progress", value)),
         )
@@ -721,6 +766,10 @@ def main() -> int:
         return esptool_entry(sys.argv[2:])
     if len(sys.argv) == 3 and sys.argv[1] == "--self-test":
         return self_test(sys.argv[2])
+    if len(sys.argv) == 3 and sys.argv[1] == "--check-update":
+        return check_update(sys.argv[2])
+    if len(sys.argv) == 4 and sys.argv[1] == "--prepare-update":
+        return check_update(sys.argv[2], prepare_cache=sys.argv[3])
     if os.name == "nt":
         try:
             import ctypes

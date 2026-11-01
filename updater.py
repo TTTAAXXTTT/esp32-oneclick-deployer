@@ -28,6 +28,7 @@ import xml.etree.ElementTree as ET
 import zipfile
 
 from deployer_core import CancelledError, DeployerError, FirmwareSpec, validate_firmware
+from https_transport import build_https_opener, is_certificate_verification_error
 
 
 UPSTREAM = "onehumanbeing/esp32-iphone-agent"
@@ -52,6 +53,10 @@ _WINDOWS_DEVICE = re.compile(r"(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\..*)?", 
 
 class UpdateError(DeployerError):
     """Update failure that leaves the last known good firmware active."""
+
+
+class UpdateCertificateError(UpdateError):
+    """Untrusted HTTPS certificates cannot be fixed by another GitHub URL."""
 
 
 @dataclass(frozen=True)
@@ -146,6 +151,41 @@ def _validate_url(url: str) -> None:
         raise UpdateError("更新地址不属于受支持的 GitHub HTTPS 源。")
 
 
+def _cli_network_proxy() -> str | None:
+    # Arduino CLI 1.5.1 uses network.proxy, not HTTP(S)_PROXY. Bridge the same
+    # proxy used by urllib without storing its credentials in arduino-cli.yaml.
+    proxy = urllib.request.getproxies().get("https")
+    if not proxy or urllib.request.proxy_bypass("github.com"):
+        return None
+    return proxy if "://" in proxy else "http://" + proxy
+
+
+def _compiler_directory(path: Path) -> Path:
+    # Arduino CLI expands NTFS short names back to their Unicode spelling.
+    # Validate the physical directory before downloading GB of dependencies:
+    # the bundled Xtensa linker needs genuinely ASCII Windows paths.
+    if sys.platform != "win32":
+        return path
+    resolved = path.resolve()
+    if str(resolved).isascii():
+        return resolved
+    raise UpdateError(
+        "ESP32 编译工具不支持当前缓存目录中的中文等非英文字符。"
+        "请按使用说明设置仅含英文字符的缓存目录后重试。当前固件保持不变。"
+    )
+
+
+def _redact_proxy(text: str, proxy: str | None) -> str:
+    if not proxy:
+        return text
+    text = text.replace(proxy, "[configured proxy]")
+    userinfo, marker, _ = urllib.parse.urlsplit(proxy).netloc.rpartition("@")
+    if marker:
+        for value in (userinfo, urllib.parse.unquote(userinfo)):
+            text = text.replace(value + "@", "[redacted]@")
+    return text
+
+
 class _SafeRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         _validate_url(newurl)
@@ -178,7 +218,7 @@ class UpdateManager:
         self._process_lock = threading.Lock()
         self._commit_lock = threading.Lock()
         self._process = None
-        self._opener = urllib.request.build_opener(_SafeRedirect())
+        self._opener = build_https_opener(_SafeRedirect())
 
     def _check_cancelled(self) -> None:
         if self._cancel.is_set():
@@ -227,6 +267,12 @@ class UpdateManager:
                     raise UpdateError("官方更新下载不完整，请重试。")
         except (urllib.error.URLError, OSError, TimeoutError) as exc:
             destination.unlink(missing_ok=True)
+            if is_certificate_verification_error(exc):
+                raise UpdateCertificateError(
+                    "无法验证官方更新服务器的 HTTPS 证书。请检查系统日期和 Windows 根证书；"
+                    "如使用代理或 HTTPS 检查软件，请确认其证书已由系统信任。"
+                    "请使用完整解压的最新版工具重试。当前固件保持不变。"
+                ) from exc
             raise UpdateError(f"无法下载官方更新：{exc}。当前固件保持不变。") from exc
         except BaseException:
             destination.unlink(missing_ok=True)
@@ -239,7 +285,7 @@ class UpdateManager:
             try:
                 self._download(REF_URL, path, 8 * 1024 * 1024)
                 return parse_main_advertisement(path.read_bytes())
-            except CancelledError:
+            except (CancelledError, UpdateCertificateError):
                 raise
             except UpdateError:
                 self._log("Git 版本查询暂时不可用，正在尝试官方提交订阅源…")
@@ -390,6 +436,9 @@ class UpdateManager:
                        k.upper() not in {"PYTHONHOME", "PYTHONPATH"}}
         environment["PYTHONUTF8"] = "1"
         environment["PYINSTALLER_RESET_ENVIRONMENT"] = "1"
+        proxy = _cli_network_proxy()
+        if proxy:
+            environment["ARDUINO_NETWORK_PROXY"] = proxy
         process = None
         chunks = []
         pending = ""
@@ -428,7 +477,7 @@ class UpdateManager:
                             pending += text
                             while "\n" in pending:
                                 line, pending = pending.split("\n", 1)
-                                self._log(line.rstrip("\r"))
+                                self._log(_redact_proxy(line.rstrip("\r"), proxy))
                             if sum(map(len, chunks)) > 32 * 1024 * 1024:
                                 raise UpdateError("编译输出异常过多，已停止并保留当前固件。")
                         self._check_cancelled()
@@ -437,10 +486,10 @@ class UpdateManager:
                             final = reader.read()
                             chunks.append(final)
                             if pending or final:
-                                self._log((pending + final).strip())
+                                self._log(_redact_proxy((pending + final).strip(), proxy))
                             output = "".join(chunks)
                             if result != 0:
-                                tail = "\n".join(output.splitlines()[-8:])
+                                tail = _redact_proxy("\n".join(output.splitlines()[-8:]), proxy)
                                 raise UpdateError(f"官方固件准备失败（退出码 {result}）。\n{tail}")
                             return output
                         if time.monotonic() > deadline:
@@ -457,14 +506,21 @@ class UpdateManager:
 
     def _ensure_tools(self) -> None:
         verify_cli(self.cli_path)
+        _compiler_directory(self.cache_root)
         data = self.cache_root / "arduino" / "data"
         downloads = self.cache_root / "arduino" / "downloads"
         user = self.cache_root / "arduino" / "user"
-        for directory in (data, downloads, user):
+        build_cache = self.cache_root / "arduino" / "build-cache"
+        for directory in (data, downloads, user, build_cache):
             directory.mkdir(parents=True, exist_ok=True)
+        compiler_data, compiler_downloads, compiler_user, compiler_cache = (
+            _compiler_directory(directory) for directory in (data, downloads, user, build_cache)
+        )
         _atomic_json(self.cache_root / "arduino-cli.yaml", {
             "board_manager": {"additional_urls": [INDEX_URL]},
-            "directories": {"data": str(data), "downloads": str(downloads), "user": str(user)},
+            "directories": {"data": str(compiler_data), "downloads": str(compiler_downloads),
+                            "user": str(compiler_user)},
+            "build_cache": {"path": str(compiler_cache)},
             "network": {"connection_timeout": "60s"},
             "metrics": {"enabled": False},
         })
@@ -549,14 +605,14 @@ class UpdateManager:
         staging_root = self.cache_root / "staging"
         staging_root.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(prefix="build-", dir=staging_root) as temporary:
-            staging = Path(temporary)
+            staging = _compiler_directory(Path(temporary))
             copied_sketch = staging / "hid_bridge"
             shutil.copytree(sketch, copied_sketch)
             build = staging / "build"
             output = staging / "output"
             # Arduino recipe splitting honours double quotes around a Windows path.
             # Forward slashes avoid backslash escaping by the recipe argument parser.
-            include = (copied_sketch / "nimble_cfg.h").resolve().as_posix()
+            include = (copied_sketch / "nimble_cfg.h").as_posix()
             if '"' in include or "\n" in include or "\r" in include:
                 raise UpdateError("更新缓存路径含不支持的字符。")
             forced_include = f'-include "{include}"'

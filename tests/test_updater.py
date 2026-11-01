@@ -56,6 +56,12 @@ class FakeResponse(io.BytesIO):
 
 class UpdateTests(unittest.TestCase):
     def setUp(self):
+        # This fixture mocks the compiler itself and supports Unicode paths.
+        # Real Windows linker paths are covered by test_updater_paths and the
+        # full download/build integration test, independently of cache logic.
+        compatible = mock.patch.object(updater, "_compiler_directory", side_effect=lambda path: path)
+        compatible.start()
+        self.addCleanup(compatible.stop)
         self.temporary = tempfile.TemporaryDirectory(prefix="更新 test ")
         self.root = Path(self.temporary.name)
         self.logs = []

@@ -6,6 +6,8 @@ import tempfile
 import urllib.request
 import zipfile
 
+from https_transport import build_https_opener
+
 ROOT = Path(__file__).resolve().parent
 URL = 'https://github.com/TTTAAXXTTT/esp32-oneclick-deployer/releases/download/v1.1.1/ESP32-OneClick-Source-v1.1.1.zip'
 
@@ -22,7 +24,7 @@ def main():
         return
     with tempfile.TemporaryDirectory(prefix='esp32-inputs-') as directory:
         archive = Path(directory) / 'source.zip'
-        with urllib.request.urlopen(URL, timeout=120) as response, archive.open('wb') as output:
+        with build_https_opener().open(URL, timeout=120) as response, archive.open('wb') as output:
             total = 0
             while chunk := response.read(1024 * 1024):
                 total += len(chunk)

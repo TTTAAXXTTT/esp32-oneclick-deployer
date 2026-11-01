@@ -4,7 +4,7 @@
 
 这是 TTTAAXXTTT 维护的独立项目，源码、测试和构建脚本直接放在本仓库。适用 Windows 10/11 x64；目标开发板为 **16 MB Flash / 8 MB OPI PSRAM**。
 
-[下载 v1.1.1 软件与完整源码](https://github.com/TTTAAXXTTT/esp32-oneclick-deployer/releases/tag/v1.1.1) · [中文图文指南](docs/GUIDE.zh-CN.md) · [从源码构建](SOURCE-BUILD.md)
+[下载 v1.1.2 软件与完整源码](https://github.com/TTTAAXXTTT/esp32-oneclick-deployer/releases/tag/v1.1.2) · [中文图文指南](docs/GUIDE.zh-CN.md) · [从源码构建](SOURCE-BUILD.md)
 
 ![软件界面](docs/windows-deployer-v1.1.1.png)
 
@@ -18,7 +18,7 @@ Windows 一键部署工具由 TTTAAXXTTT 维护。主界面底部常驻显示 QQ
 
 ![部署流程](docs/windows-deployer-flow.svg)
 
-1. 下载并完整解压 `ESP32-OneClick-N16R8-Windows-x64-v1.1.1.zip`，保留 `_internal` 等附带目录，运行 `ESP32-OneClick.exe`。
+1. 下载并完整解压 `ESP32-OneClick-N16R8-Windows-x64-v1.1.2.zip`，保留 `_internal` 等附带目录，运行 `ESP32-OneClick.exe`。
 2. 用 USB 数据线将板子的 **USB/OTG** 口接电脑，选择 COM 端口，确认可以覆盖原有程序后点击「一键部署」。
 3. 等待写入与哈希校验成功，按 RESET/EN，再将 USB/OTG 接回已解锁的 iPhone。
 4. 在单独安装的 ESP32 Agent 手机 App 中继续配对和配置模型 API。
@@ -53,7 +53,8 @@ python -m venv .venv
 | `main.py` | Windows 图形界面 |
 | `deployer_core.py` | 串口识别、固件校验与刷写 |
 | `updater.py` | 官方源码检查与本机构建 |
-| `tests/` | 68 项原有自动化测试 |
+| `https_transport.py` | 系统信任库与随包公共 CA 证书的 HTTPS 下载 |
+| `tests/` | 串口、更新、界面状态与真实 TLS 握手回归测试 |
 | `source/firmware/` | 对应固件首选源码与编译参数 |
 | `source/third-party/`、`licenses/` | 第三方对应源码及许可证 |
 | `docs/` | 图文使用说明 |
@@ -62,7 +63,11 @@ python -m venv .venv
 
 ## 验证范围
 
-v1.1.1 已通过 68 项自动化测试、冻结 EXE 自检及界面检查；内置固件已有 N16R8 实板写入和哈希校验记录。**新版固件下载、完整工具链安装、编译和刷写更新流程尚未完成完整实测。** 手机蓝牙、镜像和模型操作需要在实际设备上继续验证。
+v1.1.2 修复部分 Windows 机器下载更新时的 `CERTIFICATE_VERIFY_FAILED`：随软件附带 certifi 公共根证书，同时保留 Windows 系统信任库。证书链和域名验证始终开启；不接受未知签发者、过期或域名不符的服务器证书。
+
+验证记录与范围见 [v1.1.2 发布说明](RELEASE-v1.1.2.md)。自动检查、下载和准备更新不连接串口，也不会自动刷板。手机蓝牙、镜像和模型操作仍需实际设备验证。
+
+若最新版仍提示 HTTPS 证书错误，检查系统日期、Windows 根证书及代理的证书配置；请完整解压软件包，不要只复制 EXE。公司代理需使用系统已信任的证书，不能通过关闭证书验证来继续下载。
 
 ## 原作者与许可证
 

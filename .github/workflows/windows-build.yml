@@ -1,0 +1,46 @@
+name: Windows tests and portable build
+
+on: [push, pull_request, workflow_dispatch]
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          architecture: x64
+          cache: pip
+      - name: Install pinned dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Run all regression tests including real local TLS handshakes
+        run: python -m unittest discover -s tests -v
+      - name: Verify the pinned firmware and Arduino CLI build inputs
+        run: python prepare-build-inputs.py
+      - name: Build the portable EXE with bundled CA certificates
+        shell: pwsh
+        run: ./build.ps1 -Python "$env:pythonLocation/python.exe" -OutputDirectory "$env:RUNNER_TEMP/portable"
+      - name: Test the frozen GUI, CA bundle and esptool worker offline
+        shell: pwsh
+        run: |
+          $reportPath = Join-Path $env:RUNNER_TEMP 'frozen-self-test.json'
+          $exe = Join-Path $env:RUNNER_TEMP 'portable/ESP32-OneClick/ESP32-OneClick.exe'
+          $process = Start-Process -FilePath $exe -ArgumentList @('--self-test', "`"$reportPath`"") -Wait -PassThru -WindowStyle Hidden
+          if ($process.ExitCode -ne 0) { throw 'Frozen application self-test failed' }
+          $report = Get-Content -LiteralPath $reportPath -Raw | ConvertFrom-Json
+          if (-not $report.ok -or -not $report.https_verification) { throw 'CA bundle self-test failed' }
+          Get-Content -LiteralPath $reportPath
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-portable-and-self-test
+          path: |
+            ${{ runner.temp }}/portable/*.zip
+            ${{ runner.temp }}/portable/*.sha256.txt
+            ${{ runner.temp }}/frozen-self-test.json
+          if-no-files-found: error
+          retention-days: 14

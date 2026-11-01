@@ -1,4 +1,4 @@
-# Windows 一键部署工具 v1.1.1
+# Windows 一键部署工具 v1.1.2
 
 在 Windows 上，为 **ESP32-S3 N16R8（16 MB Flash / 8 MB OPI PSRAM）** 刷入 ESP32 Agent 固件。完整解压便携包后即可运行，使用内置固件时无需安装 Python、Arduino IDE 或 Git。
 
@@ -12,19 +12,21 @@
 
 ## 下载
 
-前往 [v1.1.1 发布页](https://github.com/TTTAAXXTTT/esp32-oneclick-deployer/releases/tag/v1.1.1)：
+前往 [v1.1.2 发布页](https://github.com/TTTAAXXTTT/esp32-oneclick-deployer/releases/tag/v1.1.2)：
 
 | 文件 | 用途 |
 | --- | --- |
-| `ESP32-OneClick-N16R8-Windows-x64-v1.1.1.zip` | Windows 10/11 x64 便携软件，包含运行环境、内置固件和对应源码 |
-| `ESP32-OneClick-Source-v1.1.1.zip` | 完整源码归档，用于阅读、修改及重新构建 |
+| `ESP32-OneClick-N16R8-Windows-x64-v1.1.2.zip` | Windows 10/11 x64 便携软件，包含运行环境、内置固件和对应源码 |
+| `ESP32-OneClick-Source-v1.1.2.zip` | 完整源码归档，用于阅读、修改及重新构建 |
 | `SHA256SUMS.txt` | 发布附件的 SHA-256 校验值 |
 
-仓库根目录直接提供工具源码、测试与构建脚本。克隆或下载本仓库后，先运行 `python prepare-build-inputs.py` 下载并校验两个构建输入，再按 [构建说明](../SOURCE-BUILD.md) 打包。Release 的完整源码附件已包含这两个输入。
+仓库根目录直接提供工具源码、测试与构建脚本。克隆或下载本仓库后，先按 [构建说明](../SOURCE-BUILD.md) 安装依赖，再运行 `python prepare-build-inputs.py` 下载并校验两个构建输入并打包。Release 的完整源码附件已包含这两个输入。
 
 ## 软件界面
 
-![Windows 一键部署工具 v1.1.1：串口选择、固件检查、更新和部署进度](windows-deployer-v1.1.1.png)
+![Windows 一键部署工具界面示意：串口选择、固件检查、更新和部署进度](windows-deployer-v1.1.1.png)
+
+截图为 v1.1.1，v1.1.2 的基本操作相同，主要修复更新下载的 HTTPS 证书兼容性。
 
 上方选择串口和连接方式；中间查看内置固件、检查更新或准备新版固件；下方显示部署阶段和日志。只有点击「一键部署」后才会写入开发板。
 
@@ -43,7 +45,7 @@
 
 若无法自动进入下载模式：按住 **BOOT** → 按一下 **RESET/EN** → 松开 **BOOT**，等待串口出现后刷新选择，并切换到手动下载模式。找不到串口时先更换数据线、USB 接口，再检查设备管理器。
 
-## v1.1.1 的固件更新
+## v1.1.2 的固件更新
 
 默认在启动时检查原作者仓库的 `main` 分支，保持打开时每 6 小时再检查一次；也可点击「检查更新」或取消自动检查。
 
@@ -64,12 +66,31 @@ esp32:esp32:esp32s3:USBMode=default,CDCOnBoot=cdc,FlashSize=16M,PSRAM=opi,Partit
 
 ## 验证范围
 
-- 已通过 **68 项自动化测试**、独立 EXE 自检和实际界面检查。
-- 已验证官方更新检查；本次发布时，内置固件与检查到的官方固件源码一致。
-- 内置 N16R8 固件已有实板写入及哈希校验成功记录。
-- **从发现新版到完整下载工具链、编译并刷写的更新流程，尚未做完整实测；手机 Agent 的完整操作闭环也未作为本发布的验证结果。**
+- 测试使用临时目录与模拟串口，不会自动改写连接到电脑的开发板。
+- v1.1.2 增加真实 HTTPS 握手回归测试，覆盖缺失根证书及不可信、过期、域名不符的证书。
+- 内置 N16R8 固件保留先前的实板写入和哈希校验记录。本次修复的具体测试结果见 [发布说明](../RELEASE-v1.1.2.md)，不把此前记录当作此次新刷板验证。
+- 手机 Agent 的完整操作闭环需在实际设备上另外验收。
 
-日志保存在 `%LOCALAPPDATA%\ESP32OneClick\logs`；设置和更新缓存位于同一应用数据目录。报告问题时可附相关日志，先检查其中是否含有不希望公开的设备标识。
+## 更新时遇到证书错误
+
+`CERTIFICATE_VERIFY_FAILED` 表示 HTTPS 服务器的证书链无法通过验证，下载会停止，当前固件保持不变。
+
+请改用完整解压的 v1.1.2 或更新版本，不要从旧目录只替换一个 EXE。新版同时使用 Windows 系统信任库与随包公共 CA 证书；若仍失败，检查电脑日期和 Windows 根证书。使用公司代理或 HTTPS 检查软件时，需要其证书已由系统信任。软件不会提供跳过证书验证的下载方式。
+
+日志保存在 `%LOCALAPPDATA%\ESP32OneClick\logs`；设置和默认更新缓存位于同一应用数据目录。报告问题时可附相关日志，先检查其中是否含有不希望公开的设备标识。
+
+## 中文目录导致编译失败
+
+Windows 上的 ESP32 链接器要求实际缓存路径只含英文字符；Arduino CLI 会把短路径别名还原为中文，因此短路径也不能解决。v1.1.2 会在下载编译依赖前检查路径，保留当前固件并提示改用英文缓存。仅查询官方更新不受此限制。
+
+可关闭工具，在解压后的软件目录打开 PowerShell，指定一个自己有写入权限、完整路径只含英文和数字的目录后启动，例如：
+
+```powershell
+$env:ESP32_ONECLICK_UPDATE_CACHE = 'C:\ESP32OneClickCache'
+.\ESP32-OneClick.exe
+```
+
+此设置只作用于本次启动的工具；以后需要沿用同一目录时，使用同样的方式启动。不会自动搬运旧缓存，首次准备更新会重新下载编译依赖。
 
 ## 来源与许可证
 
@@ -79,7 +100,7 @@ esp32:esp32:esp32s3:USBMode=default,CDCOnBoot=cdc,FlashSize=16M,PSRAM=opi,Partit
 | --- | --- |
 | ESP32 iPhone Agent 原项目 | [onehumanbeing/esp32-iphone-agent](https://github.com/onehumanbeing/esp32-iphone-agent)，原有 [MIT 声明](https://github.com/onehumanbeing/esp32-iphone-agent/blob/main/LICENSE) 保留 |
 | AirPlay 部分及链接后的完整固件 | GPL-3.0；完整固件与对应源码一同分发 |
-| 本 Windows 部署工具 | [GPL-3.0（源码包内 LICENSE）](ESP32-OneClick-Repository-Source-v1.1.1.zip) |
+| 本 Windows 部署工具 | [GPL-3.0（源码包内 LICENSE）](../LICENSE) |
 | esptool 5.1.0 | [espressif/esptool](https://github.com/espressif/esptool/tree/v5.1.0)，GPL-2.0-or-later |
 | Arduino CLI 1.5.1 | [arduino/arduino-cli](https://github.com/arduino/arduino-cli/tree/v1.5.1)，GPL-3.0 |
 

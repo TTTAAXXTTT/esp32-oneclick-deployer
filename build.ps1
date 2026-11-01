@@ -37,7 +37,7 @@ $outputRoot = [IO.Path]::GetFullPath($OutputDirectory)
 $buildRoot = Join-Path $projectRoot 'build'
 $bundleRoot = Join-Path $outputRoot 'ESP32-OneClick'
 
-foreach ($relative in @('main.py', 'deployer_core.py', 'updater.py', 'deployer.spec', 'requirements.txt',
+foreach ($relative in @('main.py', 'deployer_core.py', 'updater.py', 'https_transport.py', 'deployer.spec', 'requirements.txt',
                         'tools\arduino-cli.exe', 'tools\manifest.json',
                         'README.md', 'firmware\agent-n16r8.bin', 'firmware\manifest.json')) {
     $requiredPath = Join-Path $projectRoot $relative
@@ -57,15 +57,20 @@ if (@($sourceInputs).Count -eq 0) {
 
 $environmentCheck = @'
 import sys, struct, tkinter, importlib.metadata as m
+sys.path.insert(0, sys.argv[1])
 assert struct.calcsize('P') == 8, 'Use x64 Python'
 assert sys.version_info >= (3, 10), 'Python >=3.10 required'
 assert m.version('esptool') == '5.1.0', 'esptool 5.1.0 required'
 assert m.version('pyserial') == '3.5', 'pyserial 3.5 required'
+assert m.version('certifi') == '2026.10.23', 'certifi 2026.10.23 required'
+from https_transport import create_https_context
+context = create_https_context()
+assert context.check_hostname and context.cert_store_stats()['x509_ca'] > 100
 import PyInstaller
 t = tkinter.Tcl()
 print('Build environment:', sys.version.split()[0], 'PyInstaller', PyInstaller.__version__, 'Tcl', t.eval('info patchlevel'))
 '@
-& $pythonExe -c $environmentCheck
+& $pythonExe -c $environmentCheck $projectRoot
 if ($LASTEXITCODE -ne 0) { throw 'Build dependencies or Tcl are missing. See requirements.txt and README.md.' }
 
 & $pythonExe -m PyInstaller --noconfirm --clean --distpath $outputRoot --workpath $buildRoot (Join-Path $projectRoot 'deployer.spec')
@@ -74,7 +79,7 @@ if ($LASTEXITCODE -ne 0) { throw "PyInstaller failed with exit code $LASTEXITCOD
 # The runtime data remains under _internal/. Keep human-readable documentation
 # and preferred source alongside the executable without duplicating firmware.
 Copy-Item -LiteralPath (Join-Path $projectRoot 'README.md') -Destination (Join-Path $bundleRoot 'README.md') -Force
-foreach ($documentation in @('SOURCE-BUILD.md', 'docs')) {
+foreach ($documentation in @('SOURCE-BUILD.md', 'docs', 'RELEASE-v1.1.2.md')) {
     $documentationPath = Join-Path $projectRoot $documentation
     if (Test-Path -LiteralPath $documentationPath) {
         Copy-Item -LiteralPath $documentationPath -Destination $bundleRoot -Recurse -Force
@@ -85,7 +90,7 @@ foreach ($sourceName in $sourceInputs) {
 }
 $deployerSource = Join-Path $bundleRoot 'source\deployer'
 $null = New-Item -ItemType Directory -Path $deployerSource -Force
-foreach ($sourceFile in @('main.py', 'deployer_core.py', 'updater.py', 'deployer.spec', 'requirements.txt', 'build.ps1', 'README.md')) {
+foreach ($sourceFile in @('main.py', 'deployer_core.py', 'updater.py', 'https_transport.py', 'deployer.spec', 'requirements.txt', 'build.ps1', 'README.md')) {
     Copy-Item -LiteralPath (Join-Path $projectRoot $sourceFile) -Destination (Join-Path $deployerSource $sourceFile) -Force
 }
 $testSource = Join-Path $projectRoot 'tests'

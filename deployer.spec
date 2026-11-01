@@ -6,7 +6,7 @@ from PyInstaller.utils.hooks import collect_data_files, collect_submodules, copy
 
 
 root = Path(SPECPATH).resolve()
-required = [root / "main.py", root / "deployer_core.py", root / "updater.py",
+required = [root / "main.py", root / "deployer_core.py", root / "updater.py", root / "https_transport.py",
             root / "tools" / "arduino-cli.exe", root / "tools" / "manifest.json",
             root / "firmware" / "agent-n16r8.bin", root / "firmware" / "manifest.json"]
 for path in required:
@@ -22,7 +22,8 @@ datas = [(str(root / "firmware"), "firmware"),
          (str(root / "tools"), "tools"),
          (str(root / "licenses"), "licenses")]
 datas += collect_data_files("esptool")
-datas += copy_metadata("esptool") + copy_metadata("pyserial")
+datas += collect_data_files("certifi")
+datas += copy_metadata("esptool") + copy_metadata("pyserial") + copy_metadata("certifi")
 hiddenimports = sorted(set(collect_submodules("esptool")
                            + collect_submodules("serial")
                            + collect_submodules("rich_click")))
