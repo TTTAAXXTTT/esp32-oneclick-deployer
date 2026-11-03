@@ -129,5 +129,11 @@ class GuiTests(unittest.TestCase):
         engine.return_value.flash.assert_not_called()
         engine.return_value.verify_installed.assert_called_once()
         self.assertIn(('verified',True),list(app.events.queue))
+        app.busy=True;app.active=MagicMock();app.update_manager=None
+        with patch('tkinter.messagebox.askyesno') as ask:
+            app.close()
+        ask.assert_not_called()
+        app.active.cancel.assert_called_once()
+        self.assertTrue(app.closing)
 
 if __name__=='__main__':unittest.main()

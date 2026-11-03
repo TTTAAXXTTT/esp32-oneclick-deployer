@@ -768,7 +768,7 @@ class Application:
 
     def close(self):
         from tkinter import messagebox
-        if self.busy and not messagebox.askyesno(
+        if self.busy and getattr(self, "operation_kind", "flash") == "flash" and not messagebox.askyesno(
             "正在部署", "任务尚未结束。现在退出可能使固件不完整，需要重新刷写。是否退出？", parent=self.window,
         ):
             return
