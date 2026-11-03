@@ -4,7 +4,7 @@
 
 这是 TTTAAXXTTT 维护的独立项目，源码、测试和构建脚本直接放在本仓库。适用 Windows 10/11 x64；目标开发板为 **16 MB Flash / 8 MB OPI PSRAM**。
 
-[下载 v1.1.2 软件与完整源码](https://github.com/TTTAAXXTTT/esp32-oneclick-deployer/releases/tag/v1.1.2) · [中文图文指南](docs/GUIDE.zh-CN.md) · [从源码构建](SOURCE-BUILD.md)
+[下载 v1.1.3 软件与完整源码](https://github.com/TTTAAXXTTT/esp32-oneclick-deployer/releases/tag/v1.1.3) · [中文图文指南](docs/GUIDE.zh-CN.md) · [从源码构建](SOURCE-BUILD.md)
 
 ![软件界面](docs/windows-deployer-v1.1.1.png)
 
@@ -18,7 +18,7 @@ Windows 一键部署工具由 TTTAAXXTTT 维护。主界面底部常驻显示 QQ
 
 ![部署流程](docs/windows-deployer-flow.svg)
 
-1. 下载并完整解压 `ESP32-OneClick-N16R8-Windows-x64-v1.1.2.zip`，保留 `_internal` 等附带目录，运行 `ESP32-OneClick.exe`。
+1. 下载并完整解压 `ESP32-OneClick-N16R8-Windows-x64-v1.1.3.zip`，保留 `_internal` 等附带目录，运行 `ESP32-OneClick.exe`。
 2. 用 USB 数据线将板子的 **USB/OTG** 口接电脑，选择 COM 端口，确认可以覆盖原有程序后点击「一键部署」。
 3. 等待写入与哈希校验成功，按 RESET/EN，再将 USB/OTG 接回已解锁的 iPhone。
 4. 在单独安装的 ESP32 Agent 手机 App 中继续配对和配置模型 API。
@@ -63,9 +63,7 @@ python -m venv .venv
 
 ## 验证范围
 
-### 本地新增功能 v1.1.3：检测固件
-
-本包为 v1.1.3 本地功能版，请运行随包 EXE。上方 v1.1.2 链接是此前已公开发布的旧版本，不包含新按钮。
+### v1.1.3 新增：检测固件
 
 点击「检测固件」可比对板上启动程序、分区表与程序分区。界面明确区分匹配、不匹配和无法连接，不会自动刷写；运行中变化的配置数据不参与比对。检测会进入下载模式并重启板子，完成后仍需在手机验证蓝牙和镜像。见 [功能说明](RELEASE-v1.1.3.md)。
 

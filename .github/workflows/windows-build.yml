@@ -18,10 +18,10 @@ jobs:
           cache: pip
       - name: Install pinned dependencies
         run: python -m pip install -r requirements.txt
-      - name: Run all regression tests including real local TLS handshakes
-        run: python -m unittest discover -s tests -v
       - name: Verify the pinned firmware and Arduino CLI build inputs
         run: python prepare-build-inputs.py
+      - name: Run all regression tests including real local TLS handshakes
+        run: python -m unittest discover -s tests -v
       - name: Build the portable EXE with bundled CA certificates
         shell: pwsh
         run: ./build.ps1 -Python "$env:pythonLocation/python.exe" -OutputDirectory "$env:RUNNER_TEMP/portable"
@@ -35,6 +35,14 @@ jobs:
           $report = Get-Content -LiteralPath $reportPath -Raw | ConvertFrom-Json
           if (-not $report.ok -or -not $report.https_verification) { throw 'CA bundle self-test failed' }
           Get-Content -LiteralPath $reportPath
+      - name: Verify the frozen read-only worker refuses unguarded requests
+        shell: pwsh
+        run: |
+          $logPath = Join-Path $env:RUNNER_TEMP 'verification-guard.log'
+          $exe = Join-Path $env:RUNNER_TEMP 'portable/ESP32-OneClick/ESP32-OneClick.exe'
+          $process = Start-Process -FilePath $exe -ArgumentList @('--esptool', '--worker-log', "`"$logPath`"", 'verify-flash', '0x0', 'not-opened.bin') -Wait -PassThru -WindowStyle Hidden
+          $log = Get-Content -LiteralPath $logPath -Encoding UTF8 -Raw
+          if ($process.ExitCode -ne 2 -or -not $log.Contains('操作前缺少已验证')) { throw 'Frozen verification guard failed' }
       - uses: actions/upload-artifact@v4
         with:
           name: windows-portable-and-self-test

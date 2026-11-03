@@ -12,14 +12,12 @@
 
 ## 下载
 
-本地 v1.1.3 功能包请直接运行随包 EXE。下面是此前已公开发布的 v1.1.2，尚不含「检测固件」按钮。
-
-前往 [v1.1.2 发布页](https://github.com/TTTAAXXTTT/esp32-oneclick-deployer/releases/tag/v1.1.2)：
+前往 [v1.1.3 发布页](https://github.com/TTTAAXXTTT/esp32-oneclick-deployer/releases/tag/v1.1.3)：
 
 | 文件 | 用途 |
 | --- | --- |
-| `ESP32-OneClick-N16R8-Windows-x64-v1.1.2.zip` | Windows 10/11 x64 便携软件，包含运行环境、内置固件和对应源码 |
-| `ESP32-OneClick-Source-v1.1.2.zip` | 完整源码归档，用于阅读、修改及重新构建 |
+| `ESP32-OneClick-N16R8-Windows-x64-v1.1.3.zip` | Windows 10/11 x64 便携软件，包含运行环境、内置固件和对应源码 |
+| `ESP32-OneClick-Source-v1.1.3.zip` | 完整源码归档，用于阅读、修改及重新构建 |
 | `SHA256SUMS.txt` | 发布附件的 SHA-256 校验值 |
 
 仓库根目录直接提供工具源码、测试与构建脚本。克隆或下载本仓库后，先按 [构建说明](../SOURCE-BUILD.md) 安装依赖，再运行 `python prepare-build-inputs.py` 下载并校验两个构建输入并打包。Release 的完整源码附件已包含这两个输入。
@@ -28,7 +26,7 @@
 
 ![Windows 一键部署工具界面示意：串口选择、固件检查、更新和部署进度](windows-deployer-v1.1.1.png)
 
-截图为 v1.1.1，v1.1.2 的基本操作相同，主要修复更新下载的 HTTPS 证书兼容性。
+截图为 v1.1.1，基本操作相同；v1.1.3 还会在「检测连接」旁显示「检测固件」按钮。
 
 上方选择串口和连接方式；中间查看内置固件、检查更新或准备新版固件；下方显示部署阶段和日志。只有点击「一键部署」后才会写入开发板。
 
