@@ -174,6 +174,38 @@ def validate_firmware(spec: FirmwareSpec) -> None:
         raise DeployerError(f"无法读取内置固件：{exc.strerror or type(exc).__name__}") from exc
 
 
+def firmware_verification_regions(data: bytes) -> list[tuple[int, bytes]]:
+    """Verify boot/table and all app slots, excluding mutable NVS/filesystems."""
+    if len(data) != FLASH_BYTES:
+        raise DeployerError("完整固件长度无效，无法检测板上固件。")
+    regions = [(0, data[:0x9000])]
+    partitions = []
+    for position in range(0x8000, 0x8C00, 32):
+        magic = struct.unpack_from("<H", data, position)[0]
+        if magic == 0xFFFF:
+            break
+        if magic == 0xEBEB:
+            if hashlib.md5(data[0x8000:position]).digest() != data[position+16:position+32]:
+                raise DeployerError("固件分区表校验失败。")
+            break
+        if magic != 0x50AA:
+            raise DeployerError("固件分区表无效。")
+        kind = data[position+2]
+        offset, size = struct.unpack_from("<II", data, position+4)
+        if offset < 0x9000 or not size or offset + size > len(data):
+            raise DeployerError("固件分区超出有效范围。")
+        if any(offset < end and offset + size > start for start, end in partitions):
+            raise DeployerError("固件分区重叠。")
+        partitions.append((offset, offset+size))
+        if kind == 0:
+            if offset % 0x10000 or size % 0x1000:
+                raise DeployerError("程序分区未对齐。")
+            regions.append((offset, data[offset:offset+size]))
+    if len(regions) == 1:
+        raise DeployerError("固件中没有可检测的程序分区。")
+    return regions
+
+
 class Deployer:
     def __init__(self, spec: FirmwareSpec, command_prefix: Sequence[str] | None = None,
                  log_callback: Callable[[str], None] | None = None,
@@ -267,6 +299,31 @@ class Deployer:
             self.progress_callback(100)
             self.log_callback("固件写入成功，Flash 内容校验通过。")
             return current
+        finally:
+            self._operation_lock.release()
+
+    def verify_installed(self, port: PortInfo, expected: DeviceInfo,
+                         reset_mode: str = "auto") -> bool:
+        self._enter_operation()
+        try:
+            self.validate_firmware()
+            if expected.port_identity != port.identity:
+                raise DeployerError("设备选择已变化，请重新检测开发板。")
+            self._port_still_present(port)
+            self.progress_callback(0)
+            args = self._base_args(port, reset_mode, "hard-reset")
+            args.extend(["--guard-mac", expected.mac,
+                         "--guard-firmware-sha256", self.spec.sha256,
+                         "--guard-firmware-size", str(self.spec.size),
+                         "verify-flash", "0x0", str(Path(self.spec.path).resolve())])
+            self.log_callback("正在检测板上启动程序、分区表和程序区；不擦写 Flash。")
+            output = self._run_esptool(args, self.flash_timeout)
+            match = "FIRMWARE_MATCH" in output.splitlines()
+            different = "FIRMWARE_DIFFERENT" in output.splitlines()
+            if match == different:
+                raise DeployerError("未取得固件比对结果，暂时无法判断。")
+            self.progress_callback(100)
+            return match
         finally:
             self._operation_lock.release()
 
@@ -378,8 +435,9 @@ def _extract_option(args: list[str], name: str, required: bool = False) -> str |
     return value
 
 
-def _guarded_write(args: list[str], expected_mac: str, sha256: str, size: int) -> None:
-    """Validate the exact connected chip and reuse that connection for writing."""
+def _guarded_write(args: list[str], expected_mac: str, sha256: str, size: int,
+                   verify_only: bool = False) -> None:
+    """Validate the live chip and reuse that connection for writing or verification."""
     import esptool
     copy = args.copy()
     port = _extract_option(copy, "--port", required=True)
@@ -408,6 +466,21 @@ def _guarded_write(args: list[str], expected_mac: str, sha256: str, size: int) -
         normalized_mac, _ = _check_device_values(chip_name, flash_mb, mac, features)
         if normalized_mac != expected_mac.lower():
             raise DeployerError("写入连接上的芯片身份发生变化，已停止；没有写入固件。")
+        if verify_only:
+            reference = Path(args[-1]).read_bytes()
+            if len(reference) != size or hashlib.sha256(reference).hexdigest() != sha256.lower():
+                raise DeployerError("检测期间参考固件发生变化，请重新选择固件。")
+            regions = firmware_verification_regions(reference)
+            matched = True
+            try:
+                esptool.cmds.verify_flash(esp, regions)
+            except esptool.FatalError as exc:
+                if str(exc) != "Verification failed.":
+                    raise
+                matched = False
+            esp.hard_reset()
+            print("FIRMWARE_MATCH" if matched else "FIRMWARE_DIFFERENT", flush=True)
+            return
         print("Live device identity verified; writing on the same serial connection.", flush=True)
         esptool.main(args, esp=esp)
     finally:
@@ -432,10 +505,15 @@ def esptool_entry(argv: Sequence[str]) -> int:
         guard_mac = _extract_option(args, "--guard-mac")
         guard_sha = _extract_option(args, "--guard-firmware-sha256")
         guard_size = _extract_option(args, "--guard-firmware-size")
-        if "write-flash" in args:
+        if "write-flash" in args or "verify-flash" in args:
             if not guard_mac or not guard_sha or not guard_size:
-                raise DeployerError("写入前缺少已验证的设备和固件身份。")
-            _guarded_write(args, guard_mac, guard_sha, int(guard_size))
+                raise DeployerError("操作前缺少已验证的设备和固件身份。")
+            if "verify-flash" in args:
+                if "write-flash" in args:
+                    raise DeployerError("不能混合检测与写入操作。")
+                _guarded_write(args, guard_mac, guard_sha, int(guard_size), verify_only=True)
+            else:
+                _guarded_write(args, guard_mac, guard_sha, int(guard_size))
         elif any(item in args for item in ("flash-id", "version", "--help", "-h")):
             import esptool
             esptool.main(args)

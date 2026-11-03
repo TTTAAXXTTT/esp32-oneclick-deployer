@@ -13,9 +13,9 @@ import subprocess
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
-PREFIX = 'ESP32-OneClick-Source-v1.1.2/'
-SOURCE_NAME = 'ESP32-OneClick-Source-v1.1.2.zip'
-PORTABLE_NAME = 'ESP32-OneClick-N16R8-Windows-x64-v1.1.2.zip'
+PREFIX = 'ESP32-OneClick-Source-v1.1.3/'
+SOURCE_NAME = 'ESP32-OneClick-Source-v1.1.3.zip'
+PORTABLE_NAME = 'ESP32-OneClick-N16R8-Windows-x64-v1.1.3.zip'
 
 
 def digest(path):
@@ -37,12 +37,12 @@ def make_source(output):
         files[name] = data
     entries = [{'path': name, 'size': len(data), 'sha256': hashlib.sha256(data).hexdigest()}
                for name, data in sorted(files.items())]
-    files['SOURCE-INVENTORY.json'] = (json.dumps({'version': '1.1.2', 'files': entries}, indent=2,
+    files['SOURCE-INVENTORY.json'] = (json.dumps({'version': '1.1.3', 'files': entries}, indent=2,
                                                ensure_ascii=False) + '\n').encode()
     files['SHA256SUMS.source.txt'] = ''.join(f"{row['sha256']}  {row['path']}\n" for row in entries).encode()
     with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
         for name, data in sorted(files.items()):
-            item = zipfile.ZipInfo(PREFIX + name, date_time=(2026, 11, 1, 0, 0, 0))
+            item = zipfile.ZipInfo(PREFIX + name, date_time=(2026, 11, 3, 0, 0, 0))
             item.compress_type = zipfile.ZIP_DEFLATED
             item.external_attr = 0o100644 << 16
             archive.writestr(item, data, compresslevel=9)

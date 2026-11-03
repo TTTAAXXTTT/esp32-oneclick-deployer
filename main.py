@@ -12,7 +12,7 @@ import sys
 import threading
 import traceback
 
-APP_VERSION = "1.1.2"
+APP_VERSION = "1.1.3"
 AUTHOR_QQ = "230154231"
 AUTHOR_CONTACT = f"作者QQ：{AUTHOR_QQ}"
 
@@ -309,6 +309,9 @@ class Application:
         self.detect_button = ttk.Button(action_row, text="检测连接", style="Quiet.TButton",
                                          command=lambda: self._start("detect"))
         self.detect_button.pack(side="left")
+        self.verify_button = ttk.Button(action_row, text="检测固件", style="Quiet.TButton",
+                                        command=lambda: self._start("verify"))
+        self.verify_button.pack(side="left", padx=(8, 0))
         self.deploy_button = ttk.Button(action_row, text="一键部署", style="Action.TButton",
                                          command=lambda: self._start("flash"))
         self.deploy_button.pack(side="right")
@@ -558,12 +561,14 @@ class Application:
     def _update_actions(self):
         locked = self.busy or self.update_busy
         available = self.ready and not locked and self._selected_device() is not None
-        for button in (self.detect_button, self.deploy_button):
+        for button in (self.detect_button, self.verify_button, self.deploy_button):
             button.configure(state="normal" if available else "disabled")
         self.refresh_button.configure(state="disabled" if self.busy else "normal")
         self.port_box.configure(state="disabled" if self.busy else "normal")
         self.mode_box.configure(state="disabled" if self.busy else "readonly")
-        self.deploy_button.configure(text="正在部署……" if self.busy else "一键部署")
+        operation = getattr(self, "operation_kind", "flash")
+        self.deploy_button.configure(text="正在部署……" if self.busy and operation == "flash" else "一键部署")
+        self.verify_button.configure(text="正在检测……" if self.busy and operation == "verify" else "检测固件")
         self.check_update_button.configure(state="disabled" if locked else "normal")
         can_prepare = bool(self.update_candidate and self.update_candidate.available)
         self.prepare_update_button.configure(state="normal" if can_prepare and not locked else "disabled")
@@ -573,6 +578,7 @@ class Application:
     def _start(self, kind):
         if self.busy or self.update_busy or not self.ready:
             return
+        self.operation_kind = kind
         from deployer_core import choose_port, list_candidate_ports
         try:
             device = self._selected_device()
@@ -585,7 +591,7 @@ class Application:
         self.progress_value.set(0)
         self.percent.config(text="0%")
         self._update_actions()
-        self._log("开始部署。" if kind == "flash" else "开始检测连接；不会写入 Flash。")
+        self._log("开始部署。" if kind == "flash" else "开始检测；会进入下载模式，不擦写 Flash。")
         threading.Thread(target=self._work, args=(kind, port, mode), daemon=True).start()
 
     def _work(self, kind, port, mode):
@@ -609,6 +615,10 @@ class Application:
             self.events.put(("device", (port.device, info)))
             if kind == "detect":
                 self.events.put(("detected", info))
+            elif kind == "verify":
+                self.events.put(("stage", "verify"))
+                matched = engine.verify_installed(port, expected=info, reset_mode=mode)
+                self.events.put(("verified", matched))
             else:
                 self.events.put(("stage", "write"))
                 engine.flash(port, expected=info, reset_mode=mode)
@@ -625,18 +635,22 @@ class Application:
             "check": ("正在校验固件", "检查文件完整性和 N16R8 固件配置。", 3),
             "detect": ("正在识别开发板", "核对 ESP32-S3 芯片、16 MB Flash 和 8 MB PSRAM。", 8),
             "write": ("正在写入固件", "请保持连接，完成写入后会自动校验。", 12),
+            "verify": ("正在检测板上固件", "比对启动程序、分区表和程序区，不擦写配置数据。", 12),
+            "verified": ("板上固件与所选版本一致", "固件代码比对通过；请按 RESET/EN 启动，再在手机验证蓝牙和屏幕镜像。", 100),
             "done": ("部署成功，校验已通过", "按一下 RESET/EN 正常启动。然后将 USB/OTG 接回 iPhone，打开 ESP32 Agent。", 100),
         }
         title, detail, value = titles[stage]
         for key, label in self.stage_labels.items():
-            label.configure(fg=self.GREEN if stage == "done" else self.ACCENT if key == stage else self.MUTED)
-        self.status_title.configure(text=title, fg=self.GREEN if stage == "done" else self.INK)
+            label.configure(fg=self.GREEN if stage in {"done", "verified"} else self.ACCENT if key == stage or key == "write" and stage == "verify" else self.MUTED)
+        self.stage_labels["write"].configure(text="3  比对固件" if getattr(self, "operation_kind", "") == "verify" else "3  写入固件")
+        self.status_title.configure(text=title, fg=self.GREEN if stage in {"done", "verified"} else self.INK)
         self.status_detail.configure(text=detail)
         self.progress_value.set(value)
         self.percent.configure(text=f"{value}%")
 
     def _show_error(self, message):
-        self.status_title.configure(text="没有完成部署", fg="#B42318")
+        title = "无法判断板上固件" if getattr(self, "operation_kind", "") == "verify" else "没有完成部署"
+        self.status_title.configure(text=title, fg="#B42318")
         self.status_detail.configure(text=message)
         self._log("错误：" + message)
 
@@ -650,7 +664,7 @@ class Application:
                     self._log(value)
                 elif kind == "stage":
                     self._set_stage(value)
-                elif kind == "progress" and self.stage == "write":
+                elif kind == "progress" and self.stage in {"write", "verify"}:
                     percent = min(97, 12 + 0.85 * max(0, min(100, value)))
                     self.progress_value.set(percent)
                     self.percent.configure(text=f"{percent:.0f}%")
@@ -673,6 +687,12 @@ class Application:
                     self.status_detail.configure(text="目标板为 N16R8，可以点击“一键部署”。若退出检测，请按 RESET/EN 恢复运行。")
                     self.progress_value.set(10)
                     self.percent.configure(text="10%")
+                elif kind == "verified":
+                    self._set_stage("verified")
+                    if not value:
+                        self.status_title.configure(text="板上固件与所选版本不一致", fg="#8B5A19")
+                        self.status_detail.configure(text="可能是其他版本、空板或未完整写入。本次检测没有擦写 Flash。")
+                    self._log("固件检测：" + ("程序区与所选版本一致。" if value else "与所选版本不一致；不代表开发板损坏。"))
                 elif kind == "complete":
                     self._set_stage("done")
                     self._log("部署完成：写入进程正常结束，设备端哈希校验通过。")

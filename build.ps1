@@ -79,7 +79,7 @@ if ($LASTEXITCODE -ne 0) { throw "PyInstaller failed with exit code $LASTEXITCOD
 # The runtime data remains under _internal/. Keep human-readable documentation
 # and preferred source alongside the executable without duplicating firmware.
 Copy-Item -LiteralPath (Join-Path $projectRoot 'README.md') -Destination (Join-Path $bundleRoot 'README.md') -Force
-foreach ($documentation in @('SOURCE-BUILD.md', 'docs', 'RELEASE-v1.1.2.md')) {
+foreach ($documentation in @('SOURCE-BUILD.md', 'docs', 'RELEASE-v1.1.3.md')) {
     $documentationPath = Join-Path $projectRoot $documentation
     if (Test-Path -LiteralPath $documentationPath) {
         Copy-Item -LiteralPath $documentationPath -Destination $bundleRoot -Recurse -Force

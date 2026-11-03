@@ -1,6 +1,6 @@
-# ESP32 OneClick v1.1.2 完整源码包
+# ESP32 OneClick v1.1.3 完整源码包
 
-本项目是 TTTAAXXTTT 独立维护的 Windows 一键部署工具 v1.1.2 的完整构建工作目录。GUI、刷写后端、更新模块、测试、打包脚本与已发布便携版中的源码一致。
+本项目是 TTTAAXXTTT 独立维护的 Windows 一键部署工具 v1.1.3 的完整构建工作目录。GUI、刷写后端、更新模块、测试、打包脚本与已发布便携版中的源码一致。
 
 原作者与上游项目：[onehumanbeing/esp32-iphone-agent](https://github.com/onehumanbeing/esp32-iphone-agent)。本工具是由 TTTAAXXTTT维护的 Windows 部署辅助工具，保留上游的原始著作权与许可证声明；上游作者并未为本工具背书。
 
@@ -29,7 +29,7 @@ python -m venv .venv
 
 测试使用模拟串口与子进程，不会刷写真实开发板。
 
-v1.1.2 的 HTTPS 回归测试另使用本地临时 CA 和 HTTPS 服务，验证缺失系统 CA、有效证书、过期证书、域名不符、未知签发者、重定向和下载失败回退。不修改 Windows 证书库。
+v1.1.3 的 HTTPS 回归测试另使用本地临时 CA 和 HTTPS 服务，验证缺失系统 CA、有效证书、过期证书、域名不符、未知签发者、重定向和下载失败回退。不修改 Windows 证书库。
 
 `https_transport.py` 合并系统根证书和 `certifi==2026.10.23` 的公共根证书；PyInstaller 必须包含 `certifi/cacert.pem` 及其许可。构建脚本和冻结 EXE 自检都会检查证书加载，不能把 SSL 验证关闭当作替代。
 
@@ -62,7 +62,7 @@ v1.1.2 的 HTTPS 回归测试另使用本地临时 CA 和 HTTPS 服务，验证�
 - 镜像 SHA-256：`ca5605b4a96997121be8b993f2088aa5d43af3356f72ef25fe384ab1fae0c001`
 - 镜像长度：16,777,216 字节，合并镜像从地址 `0x0` 写入。
 
-完整首选固件源码、原始声明和精确编译参数位于 `source/firmware/`。默认固件原构建记录为 Arduino CLI 1.3.1、Arduino ESP32 core 3.3.12、NimBLE-Arduino 2.5.1。v1.1.2 的在线更新构建模块使用随包 Arduino CLI 1.5.1，并固定相同版本 core 与 NimBLE；两者不要混淆。官方未来源码变化可能要求新版部署工具。
+完整首选固件源码、原始声明和精确编译参数位于 `source/firmware/`。默认固件原构建记录为 Arduino CLI 1.3.1、Arduino ESP32 core 3.3.12、NimBLE-Arduino 2.5.1。v1.1.3 的在线更新构建模块使用随包 Arduino CLI 1.5.1，并固定相同版本 core 与 NimBLE；两者不要混淆。官方未来源码变化可能要求新版部署工具。
 
 `source/firmware/BUILD.md` 保留原便携包的路径描述；在本项目中，许可证实际位于根目录 `licenses/`，固件 manifest 位于根目录 `firmware/manifest.json`。原 `source/README.md` 是便携包内的重建说明；本源码包直接按照本文构建即可，不需要复制目录。
 
